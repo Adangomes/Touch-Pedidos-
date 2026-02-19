@@ -1,1 +1,139 @@
-qqqqqq
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Pedidos</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+/* TOPO */
+.topo {
+    padding: 20px;
+    background: #020617;
+    font-size: 24px;
+    text-align: center;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+/* CARD */
+.card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.numero {
+    font-size: 40px;
+    font-weight: bold;
+    color: #22c55e;
+}
+
+.nome {
+    margin-bottom: 10px;
+}
+
+.item {
+    font-size: 14px;
+}
+
+.btn {
+    margin-top: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #22c55e;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* TELA GRANDE */
+.tela-pronto {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: black;
+    text-align: center;
+    padding: 20px;
+}
+
+.big {
+    font-size: 60px;
+    color: #22c55e;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topo">PAINEL DE PEDIDOS</div>
+
+<div id="grid" class="grid"></div>
+
+<div class="tela-pronto">
+    <div>ÚLTIMO CHAMADO</div>
+    <div id="chamada" class="big">---</div>
+</div>
+
+<script>
+function carregar(){
+    let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+
+    let html = "";
+
+    pedidos.forEach((p, index)=>{
+        if(p.status === "preparando"){
+            html += `
+            <div class="card">
+                <div class="numero">#${p.numero}</div>
+                <div class="nome">${p.nome}</div>
+                ${p.itens.map(i=>`<div class="item">${i.nome}</div>`).join("")}
+                <button class="btn" onclick="pronto(${index})">PRONTO</button>
+            </div>`;
+        }
+    });
+
+    document.getElementById("grid").innerHTML = html;
+}
+
+function pronto(index){
+    let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+
+    pedidos[index].status = "pronto";
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+
+    chamar(pedidos[index]);
+
+    carregar();
+}
+
+function chamar(pedido){
+    let texto = `Pedido número ${pedido.numero}, ${pedido.nome}, está pronto`;
+
+    let msg = new SpeechSynthesisUtterance(texto);
+    msg.lang = "pt-BR";
+    speechSynthesis.speak(msg);
+
+    document.getElementById("chamada").innerText = "#" + pedido.numero;
+}
+
+// Atualiza automático
+setInterval(carregar, 1000);
+carregar();
+</script>
+
+</body>
+</html>
