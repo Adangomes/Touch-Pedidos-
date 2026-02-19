@@ -296,16 +296,3 @@
                     </script>
                 </body>
             </html>
-        `);
-        doc.close();
-
-        // 4. Remove o iframe depois de um tempo suficiente para a visualização abrir
-        setTimeout(() => {
-            if (document.body.contains(iframe)) {
-                document.body.removeChild(iframe);
-            }
-        }, 2000);
-    }
-</script>
-</body>
-</html>
