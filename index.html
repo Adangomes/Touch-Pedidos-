@@ -228,31 +228,48 @@
 }
 
     function imprimir() {
-        const nome = document.getElementById("nome-cliente").value || "Cliente";
-        const w = window.open('', '', 'width=300,height=600');
-        const listaHtml = pedido.map(i => `
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <span>1x ${i.nome}</span>
-                <span>R$ ${i.preco.toFixed(2)}</span>
-            </div>
-            ${i.obs ? `<div style="font-size:10px; margin-bottom:8px;">* ${i.obs}</div>` : ""}
-        `).join('');
+    const nome = document.getElementById("nome-cliente").value || "Cliente";
+    
+    // Criamos o conteúdo do cupom
+    const listaHtml = pedido.map(i => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+            <span>1x ${i.nome}</span>
+            <span>R$ ${i.preco.toFixed(2)}</span>
+        </div>
+        ${i.obs ? `<div style="font-size:10px; margin-bottom:8px;">* ${i.obs}</div>` : ""}
+    `).join('');
 
-        w.document.write(`
-            <html><body style="font-family:monospace; width:58mm; padding:10px;">
-                <center><strong>KINGIS BURGER</strong><br>PEDIDO #${numeroPedido}</center>
-                <br>Cliente: ${nome.toUpperCase()}<br>
-                ${new Date().toLocaleString('pt-BR')}
-                <hr>
-                ${listaHtml}
-                <hr>
-                <center><strong>TOTAL: R$ ${total.toFixed(2)}</strong></center>
-                <br><center>Aguarde ser chamado!<br>Obrigado!</center>
-                <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script>
-            </body></html>
-        `);
-        w.document.close();
-    }
+    const conteudoCupom = `
+        <div id="cupom-impressao" style="font-family:monospace; width:58mm; padding:10px; background:white; color:black;">
+            <center><strong>KINGIS BURGER</strong><br>PEDIDO #${numeroPedido.toString().padStart(2, '0')}</center>
+            <br>Cliente: ${nome.toUpperCase()}<br>
+            ${new Date().toLocaleString('pt-BR')}
+            <hr>
+            ${listaHtml}
+            <hr>
+            <center><strong>TOTAL: R$ ${total.toFixed(2)}</strong></center>
+            <br><center>Aguarde ser chamado!<br>Obrigado!</center>
+        </div>
+    `;
+
+    // Criamos uma janela temporária de forma mais amigável ao mobile
+    const w = window.open('', '_blank');
+    w.document.write(`
+        <html>
+            <head><title>Impressão</title></head>
+            <body style="margin:0; display:flex; justify-content:center;">
+                ${conteudoCupom}
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    };
+                </script>
+            </body>
+        </html>
+    `);
+    w.document.close();
+}
 </script>
 </body>
 </html>
