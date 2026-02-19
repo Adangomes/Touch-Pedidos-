@@ -237,8 +237,8 @@
     function imprimir() {
         const nomeCli = document.getElementById("nome-cliente").value || "Cliente";
         
-        // Geramos os itens antes de limpar o carrinho
-        const itensHtml = pedido.map(i => `
+        // 1. Capturamos os dados AGORA antes de qualquer limpeza
+        const itensParaImprimir = pedido.map(i => `
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                 <span>1x ${i.nome}</span>
                 <span>R$ ${i.preco.toFixed(2)}</span>
@@ -246,7 +246,10 @@
             ${i.obs ? `<div style="font-size:11px; margin-bottom:5px;">* ${i.obs}</div>` : ""}
         `).join('');
 
-        // Criamos um iframe invisível (Isso evita a tela branca no mobile)
+        const totalParaImprimir = total.toFixed(2);
+        const numeroParaImprimir = numeroPedido.toString().padStart(2, '0');
+
+        // 2. Criamos o iframe
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '100%';
@@ -258,41 +261,50 @@
 
         const doc = iframe.contentWindow.document;
 
+        // 3. Escrevemos o conteúdo
         doc.write(`
             <html>
                 <head>
                     <style>
-                        body { font-family: monospace; width: 58mm; padding: 10px; margin: 0; color: #000; }
+                        body { font-family: monospace; width: 58mm; padding: 10px; margin: 0; color: #000; background: #fff; }
                         center { text-align: center; }
                         hr { border: 0; border-top: 1px dashed #000; margin: 10px 0; }
+                        .topo { border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
                     </style>
                 </head>
                 <body>
-                    <center>
-                        <b style="font-size:20px;">MYDI DELIVERY</b><br>
-                        <b style="font-size:24px;">PEDIDO #${numeroPedido.toString().padStart(2, '0')}</b>
-                    </center>
-                    <br>
+                    <div class="topo">
+                        <center>
+                            <b style="font-size:18px;">MYDI DELIVERY</b><br>
+                            <b style="font-size:22px;">PEDIDO #${numeroParaImprimir}</b>
+                        </center>
+                    </div>
                     <b>CLIENTE:</b> ${nomeCli.toUpperCase()}<br>
                     <b>DATA:</b> ${new Date().toLocaleTimeString('pt-BR')}<br>
                     <hr>
-                    ${itensHtml}
+                    ${itensParaImprimir}
                     <hr>
-                    <center><b style="font-size:18px;">TOTAL: R$ ${total.toFixed(2)}</b></center>
+                    <center><b style="font-size:18px;">TOTAL: R$ ${totalParaImprimir}</b></center>
                     <br>
                     <center>Aguarde ser chamado!<br>Obrigado!</center>
+                    <script>
+                        // O segredo: só libera a impressão após o window.onload do iframe
+                        window.onload = function() {
+                            window.focus();
+                            setTimeout(function() { window.print(); }, 200);
+                        };
+                    </script>
                 </body>
             </html>
         `);
         doc.close();
 
-        // Dispara a impressão direto do conteúdo do Iframe
+        // 4. Remove o iframe depois de um tempo suficiente para a visualização abrir
         setTimeout(() => {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-            // Limpa o iframe da memória após a impressão
-            setTimeout(() => { document.body.removeChild(iframe); }, 1000);
-        }, 300);
+            if (document.body.contains(iframe)) {
+                document.body.removeChild(iframe);
+            }
+        }, 2000);
     }
 </script>
 </body>
