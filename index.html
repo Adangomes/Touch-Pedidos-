@@ -192,17 +192,32 @@
     function fecharPix() { document.getElementById('modal').style.display = 'none'; }
 
     function confirmarPagamentoPix() {
-        alert("Pagamento Confirmado pelo Sistema!");
-        fecharPix();
-        imprimir();
-        
-        // Limpar tudo
-        total = 0;
-        pedido = [];
-        numeroPedido = Math.floor(Math.random() * 900) + 100;
-        document.getElementById("nome-cliente").value = "";
-        render();
-    }
+    const nomeCli = document.getElementById("nome-cliente").value || "Cliente";
+    
+    // 1. SALVAR PARA O PAINEL
+    let pedidosNoBanco = JSON.parse(localStorage.getItem("pedidos") || "[]");
+    pedidosNoBanco.push({
+        numero: numeroPedido,
+        nome: nomeCli,
+        itens: pedido, // Aqui já leva o nome e a observação
+        total: total,
+        status: "preparando"
+    });
+    localStorage.setItem("pedidos", JSON.stringify(pedidosNoBanco));
+
+    // 2. AÇÕES DE FEEDBACK
+    alert("Pedido enviado para a cozinha!");
+    fecharPix();
+    imprimir();
+    
+    // 3. LIMPAR TELA
+    total = 0;
+    pedido = [];
+    numeroPedido = Math.floor(Math.random() * 900) + 100;
+    document.getElementById("nome-cliente").value = "";
+    document.getElementById("obsInput").value = "";
+    render();
+}
 
     function imprimir() {
         const nome = document.getElementById("nome-cliente").value || "Cliente";
