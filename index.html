@@ -13,6 +13,7 @@
         .btn-pagar { background: #009ee3; color: white; border: none; padding: 15px; margin-top: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .btn-pix { background: #00bfa5; }
         #modal-pix { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border: 2px solid #000; z-index: 100; text-align: center; }
+        .btn-imprimir { background: #333; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -30,11 +31,12 @@
 
 <div class="carrinho">
     <h2>Meu Pedido</h2>
-    <div id="lista-itens" style="flex-grow: 1;"></div>
+    <div id="lista-itens" style="flex-grow: 1; overflow-y: auto;"></div>
     <hr>
     <h3>Total: R$ <span id="total-valor">0.00</span></h3>
     <button class="btn-pagar" onclick="pagarCartao()">PAGAR COM CARTÃO (MAQUININHA)</button>
     <button class="btn-pagar btn-pix" onclick="gerarPix()">PAGAR COM PIX (NA TELA)</button>
+    <button class="btn-pagar btn-imprimir" onclick="imprimirPedido()">IMPRIMIR RECIBO TESTE</button>
 </div>
 
 <div id="modal-pix">
@@ -43,6 +45,7 @@
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SUA_CHAVE_PIX_AQUI" id="qr-img">
     </div>
     <p>Aguardando pagamento...</p>
+    <button onclick="confirmarPagamentoPix()">JÁ PAGUEI (CONFIRMAR)</button>
     <button onclick="fecharPix()">Cancelar</button>
 </div>
 
@@ -59,18 +62,82 @@
 
     function pagarCartao() {
         if(total <= 0) return alert("Carrinho vazio!");
-        // Chamar o Deep Link do Mercado Pago para a sua Point Mini
         const valor = total.toFixed(2);
+        // Tenta abrir o App do MP (funciona se estiver num Tablet/Celular)
         window.location.href = `mp-point://pay?amount=${valor}&description=PedidoLanche&editable_amount=false`;
+        
+        // Simulação: após o retorno do app, você chamaria imprimirPedido()
     }
 
     function gerarPix() {
         if(total <= 0) return alert("Carrinho vazio!");
         document.getElementById('modal-pix').style.display = 'block';
-        // Aqui você chamaria sua função de imprimir após o "OK" do banco
     }
 
-    function fecharPix() { document.getElementById('modal-pix').style.display = 'none'; }
+    function fecharPix() { 
+        document.getElementById('modal-pix').style.display = 'none'; 
+    }
+
+    function confirmarPagamentoPix() {
+        alert("Pagamento Confirmado!");
+        fecharPix();
+        imprimirPedido();
+        // Limpar pedido após finalizar
+        total = 0;
+        pedido = [];
+        document.getElementById('total-valor').innerText = "0.00";
+        document.getElementById('lista-itens').innerHTML = "";
+    }
+
+    function imprimirPedido() {
+        if (pedido.length === 0) return alert("Não há itens no pedido!");
+
+        const janelaImpressao = window.open('', '', 'width=300,height=600');
+        
+        janelaImpressao.document.write(`
+            <html>
+            <head>
+                <style>
+                    @page { margin: 0; }
+                    body { 
+                        font-family: 'Courier New', Courier, monospace; 
+                        width: 58mm; 
+                        padding: 10px;
+                        font-size: 12px;
+                    }
+                    .txt-center { text-align: center; }
+                    .linha { border-top: 1px dashed #000; margin: 5px 0; }
+                    .item-linha { display: flex; justify-content: space-between; margin-bottom: 2px; }
+                </style>
+            </head>
+            <body>
+                <div class="txt-center">
+                    <strong>*** PEDIDO DE LANCHE ***</strong><br>
+                    ${new Date().toLocaleString('pt-BR')}
+                </div>
+                <div class="linha"></div>
+                <div id="itens-impressao">
+                    ${pedido.map(item => `<div class="item-linha"><span>${item}</span></div>`).join('')}
+                </div>
+                <div class="linha"></div>
+                <div class="txt-center">
+                    <strong>TOTAL: R$ ${total.toFixed(2)}</strong>
+                </div>
+                <div class="linha"></div>
+                <div class="txt-center" style="font-size: 10px;">
+                    Aguarde ser chamado.<br>Obrigado!
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(() => { window.close(); }, 500);
+                    }
+                <\/script>
+            </body>
+            </html>
+        `);
+        janelaImpressao.document.close();
+    }
 </script>
 </body>
 </html>
