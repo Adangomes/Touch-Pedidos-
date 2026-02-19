@@ -54,22 +54,20 @@
 
     /* --- LÓGICA DE IMPRESSÃO PARA CUPOM 58mm --- */
     @media print {
-        /* Esconde tudo o que está no site */
-        body * {
-            visibility: hidden;
-        }
-        /* Mostra apenas a div de impressão que o JS cria */
-        #area-impressao, #area-impressao * {
-            visibility: visible;
+        @page { margin: 0; }
+        body * { display: none !important; }
+        #area-impressao, #area-impressao * { 
+            display: block !important; 
+            visibility: visible !important; 
         }
         #area-impressao {
             position: absolute;
-            left: 0;
             top: 0;
-            width: 58mm; /* Ajusta ao papel da sua impressora */
-            margin: 0;
-            padding: 0;
+            left: 0;
+            width: 100%;
         }
+        /* Remove imagens pesadas na hora de imprimir */
+        img { display: none !important; }
     }
 </style>
 </head>
