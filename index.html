@@ -7,16 +7,17 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #eee; }
         .menu { width: 60%; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto; }
-        .item { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; font-weight: bold; }
-        .item:active { background: #d1ecf1; }
+        .item { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .item:active { background: #d1ecf1; transform: scale(0.98); }
         .carrinho { width: 40%; background: #fff; border-left: 4px solid #009ee3; padding: 20px; display: flex; flex-direction: column; }
         .total-box { font-size: 28px; font-weight: bold; margin: 20px 0; color: #009ee3; }
-        .btn-pgto { padding: 20px; margin-bottom: 10px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 18px; }
+        .btn-pgto { padding: 18px; margin-bottom: 10px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
         .btn-cartao { background-color: #009ee3; }
         .btn-pix { background-color: #00a152; }
+        .btn-imprimir { background-color: #333; margin-top: 10px; }
         #area-pix { margin-top: 15px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
         #qrcode-img { width: 180px; display: none; margin: 10px auto; border: 2px solid #00a152; padding: 5px; }
-        #copia-e-cola { font-size: 11px; word-break: break-all; color: #666; background: #f9f9f9; padding: 5px; border-radius: 5px; }
+        #copia-e-cola { font-size: 10px; word-break: break-all; color: #666; background: #f9f9f9; padding: 5px; border-radius: 5px; max-height: 50px; overflow: hidden; }
     </style>
 </head>
 <body>
@@ -39,6 +40,7 @@
     
     <button class="btn-pgto btn-cartao" onclick="pagarCartao()">💳 CARTÃO (MAQUININHA)</button>
     <button class="btn-pgto btn-pix" onclick="pagarPix()">⚡ PIX (NA TELA)</button>
+    <button class="btn-pgto btn-imprimir" onclick="imprimirCupom()">🖨️ IMPRIMIR RECIBO</button>
 
     <div id="area-pix">
         <p id="msg-pix" style="font-weight: bold;"></p>
@@ -49,22 +51,23 @@
 
 <script>
     let total = 0;
-    const ACCESS_TOKEN = "TEST-1998879028639759-021913-2300cc718fb9625b55744173f340f575-273401276"; // <--- COLE O TOKEN AQUI
+    let itensPedido = [];
+    // ATENÇÃO: Use o token APP_USR para produção!
+    const ACCESS_TOKEN = "TEST-1998879028639759-021913-2300cc718fb9625b55744173f340f575-273401276"; 
 
     function add(nome, preco) {
         total += preco;
+        itensPedido.push(`${nome} - R$ ${preco.toFixed(2)}`);
         document.getElementById('total').innerText = total.toFixed(2);
         document.getElementById('lista').innerHTML += `<div style="padding:5px 0; border-bottom:1px solid #eee;">${nome} - R$ ${preco.toFixed(2)}</div>`;
     }
 
-    // 💳 FUNÇÃO CARTÃO (ACIONA APP MERCADO PAGO NO CELULAR)
     function pagarCartao() {
         if(total === 0) return alert("Adicione itens!");
         const url = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido_Totem&editable_amount=false`;
         window.location.href = url;
     }
 
-    // ⚡ FUNÇÃO PIX (GERA QR CODE VIA API)
     async function pagarPix() {
         if(total === 0) return alert("Adicione itens!");
         document.getElementById('msg-pix').innerText = "Gerando Pix...";
@@ -73,7 +76,7 @@
             transaction_amount: total,
             description: "Pedido Totem Lanches",
             payment_method_id: "pix",
-            payer: { email: "cliente@exemplo.com" }
+            payer: { email: "adangones55@gmail.com" } // Seu e-mail configurado
         };
 
         try {
@@ -88,20 +91,42 @@
             });
 
             const data = await response.json();
-            
             if(data.point_of_interaction) {
                 const qrCodeBase64 = data.point_of_interaction.transaction_data.qr_code_base64;
                 const copiaCola = data.point_of_interaction.transaction_data.qr_code;
-                
                 document.getElementById('qrcode-img').src = `data:image/png;base64,${qrCodeBase64}`;
                 document.getElementById('qrcode-img').style.display = "block";
-                document.getElementById('msg-pix').innerText = "Pague agora com Pix:";
+                document.getElementById('msg-pix').innerText = "Pague agora:";
                 document.getElementById('copia-e-cola').innerText = copiaCola;
             } else {
-                alert("Erro: " + (data.message || "Verifique seu Token"));
+                alert("Erro ao gerar Pix. Verifique se o Token é válido.");
             }
         } catch (error) {
-            alert("Erro na conexão com Mercado Pago.");
+            alert("Erro de conexão.");
+        }
+    }
+
+    // Função para imprimir na sua impressora Bluetooth da foto
+    async function imprimirCupom() {
+        if(itensPedido.length === 0) return alert("Pedido vazio!");
+        
+        try {
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }]
+            });
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+            const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+            const cabecalho = "      TOTEM LANCHES\n--------------------------------\n";
+            const corpo = itensPedido.join('\n') + `\n--------------------------------\nTOTAL: R$ ${total.toFixed(2)}\n\n`;
+            const rodape = "   OBRIGADO E VOLTE SEMPRE!\n\n\n\n";
+
+            const encoder = new TextEncoder();
+            await characteristic.writeValue(encoder.encode(cabecalho + corpo + rodape));
+            alert("Imprimindo...");
+        } catch (e) {
+            alert("Erro na impressora: Verifique se o Bluetooth está ligado.");
         }
     }
 </script>
