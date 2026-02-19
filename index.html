@@ -236,41 +236,48 @@
 
     function imprimir() {
         const nome = document.getElementById("nome-cliente").value || "Cliente";
+        
+        // Criamos o HTML do cupom
         const listaHtml = pedido.map(i => `
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <div style="display:flex; justify-content:space-between;">
                 <span>1x ${i.nome}</span>
                 <span>R$ ${i.preco.toFixed(2)}</span>
             </div>
-            ${i.obs ? `<div style="font-size:11px; margin-bottom:6px; border-left: 2px solid #000; padding-left:5px;">* ${i.obs}</div>` : ""}
+            ${i.obs ? `<div style="font-size:12px;">* ${i.obs}</div>` : ""}
         `).join('');
 
         const areaImpressao = document.createElement('div');
         areaImpressao.id = 'area-impressao';
-        areaImpressao.style.cssText = 'font-family:monospace; width:58mm; padding:5px; color:black; background:white;';
+        // Usamos estilos inline simples para não sobrecarregar o processamento
+        areaImpressao.style.cssText = 'font-family: monospace; width: 58mm; color: black; background: white; padding: 10px;';
 
         areaImpressao.innerHTML = `
-            <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:10px; margin-bottom:10px;">
-                <strong style="font-size:20px;">MYDI DELIVERY</strong><br>
-                <span style="font-size:24px; font-weight:bold;">PEDIDO #${numeroPedido.toString().padStart(2, '0')}</span>
+            <div style="text-align:center;">
+                <b style="font-size:20px;">KINGIS BURGER</b><br>
+                <b style="font-size:22px;">PEDIDO #${numeroPedido.toString().padStart(2, '0')}</b>
             </div>
-            <div style="font-size:12px; margin-bottom:10px;">
-                <strong>CLIENTE:</strong> ${nome.toUpperCase()}<br>
-                <strong>DATA:</strong> ${new Date().toLocaleString('pt-BR')}
+            <br>
+            <div style="font-size:14px;">
+                CLIENTE: ${nome.toUpperCase()}<br>
+                DATA: ${new Date().toLocaleTimeString('pt-BR')}
             </div>
-            <div style="border-bottom:1px dashed #000; padding-bottom:5px; margin-bottom:5px;">
-                ${listaHtml}
-            </div>
+            <hr style="border:1px dashed #000">
+            ${listaHtml}
+            <hr style="border:1px dashed #000">
             <div style="text-align:center; font-size:18px;">
-                <strong>TOTAL: R$ ${total.toFixed(2)}</strong>
+                <b>TOTAL: R$ ${total.toFixed(2)}</b>
             </div>
-            <div style="text-align:center; margin-top:15px; font-size:11px; border-top:1px dashed #000; padding-top:10px;">
-                Aguarde ser chamado!<br>Obrigado pela preferência!
-            </div>
+            <br><center>Obrigado!</center>
         `;
 
         document.body.appendChild(areaImpressao);
-        window.print();
-        setTimeout(() => { document.body.removeChild(areaImpressao); }, 1000);
+
+        // O segredo para o Mobile: esperar um mini-tempo para o DOM processar
+        setTimeout(() => {
+            window.print();
+            // Remove logo após o comando para não travar a memória do celular
+            document.body.removeChild(areaImpressao);
+        }, 250);
     }
 </script>
 </body>
