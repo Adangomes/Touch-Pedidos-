@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Self-Service - Kingis Burger</title>
+    <title>Premium Self-Service</title>
     <style>
         :root {
-            --madero-black: #1a1a1a;
+            --madero-black: #121212;
             --madero-gold: #c5a059;
+            --madero-gray: #252525;
             --madero-white: #ffffff;
-            --madero-gray: #333;
         }
 
         body { 
-            font-family: 'Montserrat', sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
             display: flex; 
             height: 100vh; 
             background: var(--madero-black); 
             color: var(--madero-white);
-            overflow: hidden;
         }
 
-        /* MENU DE PRODUTOS */
+        /* MENU LATERAL DE PRODUTOS */
         .menu { 
-            width: 70%; 
+            width: 65%; 
             padding: 30px; 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -35,31 +34,44 @@
         .item { 
             background: var(--madero-gray); 
             border-radius: 15px; 
-            padding: 0; 
-            text-align: center; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
-            cursor: pointer; 
-            transition: 0.3s; 
             overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
+            cursor: pointer; 
+            transition: transform 0.2s, border 0.2s;
             border: 1px solid transparent;
+            text-align: center;
         }
 
-        .item:hover { border-color: var(--madero-gold); transform: translateY(-5px); }
-
+        .item:hover { transform: translateY(-5px); border-color: var(--madero-gold); }
         .item img { width: 100%; height: 180px; object-fit: cover; }
-
         .item-info { padding: 15px; }
-        .item-nome { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
-        .item-preco { color: var(--madero-gold); font-size: 1.1rem; }
+        .item-nome { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
+        .item-preco { color: var(--madero-gold); font-size: 1.1rem; font-weight: bold; }
 
-        /* CARRINHO */
+        /* CARRINHO E FINALIZAÇÃO */
         .carrinho { 
-            width: 30%; 
-            background: #111; 
-            border-left: 1px solid var(--madero-gold); 
-            padding: 25px; 
+            width: 35%; 
+            background: #0a0a0a; 
+            border-left: 2px solid var(--madero-gold); 
+            padding: 30px; 
             display: flex; 
             flex-direction: column; 
+        }
+
+        h2 { color: var(--madero-gold); text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        .item-carrinho { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; font-size: 1.1rem; }
+
+        .input-cliente {
+            background: #1a1a1a;
+            border: 1px solid var(--madero-gold);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .btn-pagar { 
@@ -69,71 +81,70 @@
             padding: 18px; 
             margin-top: 10px; 
             border-radius: 8px; 
-            font-weight: 900; 
+            font-weight: bold; 
+            font-size: 1.1rem;
             cursor: pointer; 
+            transition: 0.3s;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
+        .btn-pagar:hover { opacity: 0.9; }
         .btn-pix { background: transparent; border: 1px solid var(--madero-gold); color: var(--madero-gold); }
+        .btn-imprimir { background: #333; color: white; margin-top: 20px; font-size: 0.8rem; }
 
-        /* MODAL PIX ESTILO MADERO */
+        /* MODAL PIX */
         #modal-pix { 
             display: none; 
             position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); 
-            z-index: 1000; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
+            top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            z-index: 100; 
+            text-align: center; 
+            color: black;
+            width: 350px;
         }
 
-        .pix-container { background: white; padding: 20px; border-radius: 20px; color: black; text-align: center; width: 320px; }
-        
-        #qr-img { width: 220px; height: 220px; }
+        #qr-img { width: 250px; height: 250px; margin-bottom: 20px; }
 
-        /* CIRCULO DE TEMPO */
-        .timer-circle {
-            margin: 20px auto;
-            width: 60px; height: 60px;
-            border: 5px solid #eee;
-            border-top: 5px solid var(--madero-gold);
-            border-radius: 50%;
-            animation: spin 2s linear infinite;
+        .timer-bar {
+            width: 100%; height: 5px; background: #eee; border-radius: 10px; margin-top: 15px; overflow: hidden;
+        }
+        .timer-progress {
+            width: 100%; height: 100%; background: var(--madero-gold);
+            animation: countdown 50s linear forwards;
         }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .countdown { font-size: 2rem; font-weight: bold; color: var(--madero-gold); margin: 10px 0; }
+        @keyframes countdown { from { width: 100%; } to { width: 0%; } }
     </style>
 </head>
 <body>
 
 <div class="menu">
     <div class="item" onclick="add('Cheese Madero', 39.00)">
-        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500" alt="Lanche">
+        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500">
         <div class="item-info">
             <div class="item-nome">Cheese Madero</div>
             <div class="item-preco">R$ 39,00</div>
         </div>
     </div>
     <div class="item" onclick="add('Madero Bacon', 45.00)">
-        <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?q=80&w=500" alt="Lanche">
+        <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?q=80&w=500">
         <div class="item-info">
             <div class="item-nome">Madero Bacon</div>
             <div class="item-preco">R$ 45,00</div>
         </div>
     </div>
     <div class="item" onclick="add('Limonada Rosa', 12.00)">
-        <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?q=80&w=500" alt="Bebida">
+        <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?q=80&w=500">
         <div class="item-info">
             <div class="item-nome">Limonada Rosa</div>
             <div class="item-preco">R$ 12,00</div>
         </div>
     </div>
     <div class="item" onclick="add('Shake Nutella', 22.00)">
-        <img src="https://images.unsplash.com/photo-1572490122747-3968b75cc699?q=80&w=500" alt="Sobremesa">
+        <img src="https://images.unsplash.com/photo-1572490122747-3968b75cc699?q=80&w=500">
         <div class="item-info">
             <div class="item-nome">Shake Nutella</div>
             <div class="item-preco">R$ 22,00</div>
@@ -142,101 +153,156 @@
 </div>
 
 <div class="carrinho">
-    <h1 style="color: var(--madero-gold); border-bottom: 2px solid var(--madero-gold); padding-bottom: 10px;">PEDIDO</h1>
-    <div id="lista-itens" style="flex-grow: 1; overflow-y: auto; margin-top: 15px;"></div>
-    <div style="font-size: 1.5rem; margin: 20px 0;">TOTAL: <span id="total-valor">0.00</span></div>
+    <h2>Seu Pedido</h2>
     
-    <button class="btn-pagar" onclick="pagarCartao()">Pagar com Cartão</button>
-    <button class="btn-pagar btn-pix" onclick="gerarPix()">Pagar com PIX</button>
+    <input type="text" id="nome-cliente" class="input-cliente" placeholder="SEU NOME AQUI...">
+
+    <div id="lista-itens" style="flex-grow: 1; overflow-y: auto;"></div>
+    
+    <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+    <h3 style="font-size: 1.8rem; margin: 0;">Total: <span style="color:var(--madero-gold)">R$ <span id="total-valor">0.00</span></span></h3>
+    
+    <button class="btn-pagar" onclick="pagarCartao()">PAGAR COM CARTÃO</button>
+    <button class="btn-pagar btn-pix" onclick="gerarPix()">PAGAR COM PIX</button>
+    <button class="btn-pagar btn-imprimir" onclick="imprimirPedido()">REIMPRIMIR ÚLTIMO</button>
 </div>
 
 <div id="modal-pix">
-    <div class="pix-container">
-        <h2 style="margin: 0;">PAGUE AGORA</h2>
-        <div class="countdown" id="tempo">50</div>
+    <h3 style="margin-top:0">Aguardando Pagamento</h3>
+    <div id="qrcode-container">
         <img src="" id="qr-img" alt="QR Code Pix">
-        <p style="font-size: 0.8rem; color: #666;">Aguardando aprovação do banco...</p>
-        <div class="timer-circle"></div>
     </div>
-    <button onclick="fecharPix()" style="margin-top: 20px; color: white; background: none; border: none; cursor: pointer;">Cancelar Pedido</button>
+    <p id="msg-pix">Escaneie o QR Code para finalizar</p>
+    <div class="timer-bar"><div class="timer-progress"></div></div>
+    <br>
+    <button onclick="fecharPix()" style="background:none; border:none; cursor:pointer; color:#888; text-decoration:underline">Cancelar Pedido</button>
 </div>
 
 <script>
     let total = 0;
     let pedido = [];
-    let timerInterval;
+    let numeroPedido = Math.floor(Math.random() * 900) + 100; // Gera número inicial
+    let pixTimer;
 
     function add(nome, preco) {
         total += preco;
         pedido.push({nome: nome, preco: preco});
         document.getElementById('total-valor').innerText = total.toFixed(2);
-        document.getElementById('lista-itens').innerHTML += `
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:1.1rem;">
-                <span>${nome}</span> <span>R$ ${preco.toFixed(2)}</span>
-            </div>`;
-    }
-
-    async function gerarPix() {
-        if(total <= 0) return alert("Adicione itens ao pedido!");
         
-        const modal = document.getElementById('modal-pix');
-        modal.style.display = 'flex';
-        
-        // Simulação de geração de QR Code (Coloque seu Bearer real aqui)
-        document.getElementById('qr-img').src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=PEDIDO_KINGIS_BURGER";
-
-        let tempoRestante = 50;
-        const displayTempo = document.getElementById('tempo');
-
-        timerInterval = setInterval(() => {
-            tempoRestante--;
-            displayTempo.innerText = tempoRestante;
-
-            // SIMULAÇÃO DE APROVAÇÃO (No segundo 40, ele aprova sozinho para teste)
-            if(tempoRestante === 40) {
-                clearInterval(timerInterval);
-                sucessoPagamento();
-            }
-
-            if(tempoRestante <= 0) {
-                clearInterval(timerInterval);
-                alert("Tempo esgotado! Tente novamente.");
-                fecharPix();
-            }
-        }, 1000);
-    }
-
-    function sucessoPagamento() {
-        alert("PAGAMENTO APROVADO!");
-        imprimirPedido();
-        fecharPix();
-        location.reload(); // Reinicia o totem para o próximo cliente
-    }
-
-    function fecharPix() {
-        clearInterval(timerInterval);
-        document.getElementById('modal-pix').style.display = 'none';
+        const lista = document.getElementById('lista-itens');
+        lista.innerHTML += `<div class="item-carrinho"><span>1x ${nome}</span> <span>R$ ${preco.toFixed(2)}</span></div>`;
+        lista.scrollTop = lista.scrollHeight;
     }
 
     function pagarCartao() {
         if(total <= 0) return alert("Carrinho vazio!");
-        window.location.href = `mp-point://pay?amount=${total.toFixed(2)}&description=KingisBurger&editable_amount=false`;
+        const nome = document.getElementById('nome-cliente').value;
+        if(!nome) return alert("Por favor, digite seu nome.");
+        
+        const valor = total.toFixed(2);
+        // Após pagar no cartão, a pessoa volta e imprime.
+        window.location.href = `mp-point://pay?amount=${valor}&description=Pedido-${numeroPedido}&editable_amount=false`;
+    }
+
+    async function gerarPix() {
+        if(total <= 0) return alert("Carrinho vazio!");
+        const nome = document.getElementById('nome-cliente').value;
+        if(!nome) return alert("Por favor, digite seu nome.");
+
+        document.getElementById('modal-pix').style.display = 'block';
+        document.getElementById('qr-img').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
+
+        const idempotencyKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+        try {
+            const response = await fetch("https://api.mercadopago.com/v1/payments", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276", // <--- SEU TOKEN AQUI
+                    "Content-Type": "application/json",
+                    "X-Idempotency-Key": idempotencyKey
+                },
+                body: JSON.stringify({
+                    transaction_amount: parseFloat(total.toFixed(2)),
+                    description: "Pedido Kingis Burger",
+                    payment_method_id: "pix",
+                    payer: { email: "totem@kingisburger.com" }
+                })
+            });
+
+            const data = await response.json();
+            
+            if(data.point_of_interaction) {
+                document.getElementById('qr-img').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
+                
+                // Simulação automática para teste (em 40 segundos aprova sozinho e imprime)
+                pixTimer = setTimeout(() => {
+                    sucessoPix();
+                }, 40000); 
+
+            } else {
+                alert("Erro: " + data.message);
+                fecharPix();
+            }
+        } catch (error) {
+            alert("Erro de conexão!");
+            fecharPix();
+        }
+    }
+
+    function sucessoPix() {
+        document.getElementById('msg-pix').innerText = "PAGAMENTO APROVADO!";
+        document.getElementById('msg-pix').style.color = "green";
+        setTimeout(() => {
+            imprimirPedido();
+            fecharPix();
+            resetarTotem();
+        }, 2000);
+    }
+
+    function resetarTotem() {
+        total = 0;
+        pedido = [];
+        numeroPedido = Math.floor(Math.random() * 900) + 100;
+        document.getElementById('total-valor').innerText = "0.00";
+        document.getElementById('lista-itens').innerHTML = "";
+        document.getElementById('nome-cliente').value = "";
+    }
+
+    function fecharPix() { 
+        clearTimeout(pixTimer);
+        document.getElementById('modal-pix').style.display = 'none'; 
     }
 
     function imprimirPedido() {
-        const win = window.open('', '', 'width=300,height=600');
-        win.document.write('<html><body style="font-family:monospace; text-align:center;">');
-        win.document.write('<h2>MADERO STYLE BURGER</h2>');
-        win.document.write('<p>PEDIDO Nº ' + Math.floor(Math.random() * 100) + '</p>');
-        win.document.write('<hr>');
-        pedido.forEach(i => win.document.write(`<p>${i.nome} - R$ ${i.preco}</p>`));
-        win.document.write('<h3>TOTAL: R$ ' + total.toFixed(2) + '</h3>');
-        win.document.write('<p>Aguarde na mesa!</p>');
-        win.document.write('</body></html>');
-        win.print();
-        win.close();
+        if (pedido.length === 0) return alert("Não há itens!");
+        const nomeCliente = document.getElementById('nome-cliente').value || "Cliente";
+
+        const janela = window.open('', '', 'width=300,height=600');
+        const itensHtml = pedido.map(i => `
+            <div style="display: flex; justify-content: space-between;">
+                <span>1x ${i.nome}</span>
+                <span>R$ ${i.preco.toFixed(2)}</span>
+            </div>`).join('');
+
+        janela.document.write(`
+            <html>
+            <body style="font-family: 'Courier New', monospace; width: 58mm; padding: 10px; font-size: 12px; text-align: center;">
+                <h2 style="margin:0">KINGIS BURGER</h2>
+                <p>PEDIDO: #${numeroPedido}</p>
+                <p>CLIENTE: ${nomeCliente.toUpperCase()}</p>
+                <div style="border-top: 1px dashed #000; margin: 5px 0;"></div>
+                <div style="text-align: left;">${itensHtml}</div>
+                <div style="border-top: 1px dashed #000; margin: 5px 0;"></div>
+                <h3 style="font-size: 16px;">TOTAL: R$ ${total.toFixed(2)}</h3>
+                <p>${new Date().toLocaleString()}</p>
+                <p>Aguarde ser chamado!</p>
+                <script>window.onload = function() { window.print(); window.close(); }<\/script>
+            </body>
+            </html>
+        `);
+        janela.document.close();
     }
 </script>
-
 </body>
 </html>
