@@ -292,8 +292,22 @@ document.addEventListener("keydown", e=>{
 });
 
 function finalizar(){
+    let nome = document.getElementById('nome').value || "Cliente";
+
+    let novoPedido = {
+        numero,
+        nome,
+        itens: pedido,
+        total,
+        status: "preparando"
+    };
+
+    let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+    pedidos.push(novoPedido);
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+
     imprimir();
-    alert("Pagamento confirmado!");
+    alert("Pedido enviado para cozinha!");
 
     total = 0;
     pedido = [];
