@@ -75,42 +75,50 @@
 
     // FUNÇÃO PIX COM TOKEN CORRIGIDO (CORRIGIDA)
     async function gerarPix() {
-        if(total <= 0) return alert("Carrinho vazio!");
+    if(total <= 0) return alert("Carrinho vazio!");
+    
+    document.getElementById('modal-pix').style.display = 'block';
+    document.getElementById('qr-img').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
+
+    // GERA UMA CHAVE ALEATÓRIA PARA EVITAR O ERRO DE IDEMPOTENCY
+    const idempotencyKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    try {
+        const response = await fetch("https://api.mercadopago.com/v1/payments", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer TEST-1998879028639759-021913-2300cc718fb9625b55744173f340f575-273401276",
+                "Content-Type": "application/json",
+                "X-Idempotency-Key": idempotencyKey // <--- LINHA QUE RESOLVE O SEU ERRO
+            },
+            body: JSON.stringify({
+                transaction_amount: parseFloat(total.toFixed(2)),
+                description: "Pedido Totem Lanche",
+                payment_method_id: "pix",
+                payer: { 
+                    email: "totem@email.com",
+                    first_name: "Cliente",
+                    last_name: "Totem"
+                }
+            })
+        });
+
+        const data = await response.json();
         
-        document.getElementById('modal-pix').style.display = 'block';
-        document.getElementById('qr-img').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
-
-        try {
-            const response = await fetch("https://api.mercadopago.com/v1/payments", {
-                method: "POST",
-                headers: {
-                    "Authorization": "Bearer TEST-1998879028639759-021913-2300cc718fb9625b55744173f340f575-273401276",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    transaction_amount: parseFloat(total.toFixed(2)),
-                    description: "Pedido Totem Lanche",
-                    payment_method_id: "pix",
-                    notification_url: "https://seusite.com/webhook", // Opcional
-                    payer: { email: "totem@email.com" }
-                })
-            });
-
-            const data = await response.json();
-            
-            if(data.point_of_interaction) {
-                document.getElementById('qr-img').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
-            } else {
-                alert("Erro ao gerar Pix: " + (data.message || "Verifique o Access Token"));
-                fecharPix();
-            }
-        } catch (error) {
-            console.error("Erro na API:", error);
-            alert("Erro na conexão com Mercado Pago.");
+        if(data.point_of_interaction) {
+            // MOSTRA O QR CODE NA TELA
+            document.getElementById('qr-img').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
+        } else {
+            console.error("Detalhes do erro:", data);
+            alert("Erro do Mercado Pago: " + (data.message || "Verifique os dados"));
             fecharPix();
         }
+    } catch (error) {
+        console.error("Erro na conexão:", error);
+        alert("Erro de rede. Verifique sua internet.");
+        fecharPix();
     }
-
+}
     function fecharPix() { 
         document.getElementById('modal-pix').style.display = 'none'; 
     }
