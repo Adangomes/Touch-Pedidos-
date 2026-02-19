@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Totem Autoatendimento</title>
+    <title>Totem de Autoatendimento</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f4f4; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #eee; }
         .menu { width: 60%; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow-y: auto; }
-        .item { background: white; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
-        .item:active { transform: scale(0.95); }
-        .carrinho { width: 40%; background: #fff; border-left: 3px solid #009ee3; padding: 20px; display: flex; flex-direction: column; }
-        .total-box { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #333; }
-        .btn-pgto { padding: 15px; margin-bottom: 10px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .item { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; font-weight: bold; }
+        .item:active { background: #d1ecf1; }
+        .carrinho { width: 40%; background: #fff; border-left: 4px solid #009ee3; padding: 20px; display: flex; flex-direction: column; }
+        .total-box { font-size: 28px; font-weight: bold; margin: 20px 0; color: #009ee3; }
+        .btn-pgto { padding: 20px; margin-bottom: 10px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 18px; }
         .btn-cartao { background-color: #009ee3; }
         .btn-pix { background-color: #00a152; }
-        #area-pix { margin-top: 20px; text-align: center; }
-        #qrcode-img { width: 200px; height: 200px; display: none; margin: 0 auto; }
+        #area-pix { margin-top: 15px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
+        #qrcode-img { width: 180px; display: none; margin: 10px auto; border: 2px solid #00a152; padding: 5px; }
+        #copia-e-cola { font-size: 11px; word-break: break-all; color: #666; background: #f9f9f9; padding: 5px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -32,51 +33,47 @@
 </div>
 
 <div class="carrinho">
-    <h2>🛒 Seu Pedido</h2>
-    <div id="lista" style="flex-grow: 1; overflow-y: auto; margin-bottom: 10px;"></div>
+    <h2>📋 Seu Pedido</h2>
+    <div id="lista" style="flex-grow: 1; overflow-y: auto;"></div>
     <div class="total-box">Total: R$ <span id="total">0.00</span></div>
     
-    <button class="btn-pgto btn-cartao" onclick="pagarCartao()">💳 PAGAR COM CARTÃO</button>
-    <button class="btn-pgto btn-pix" onclick="pagarPix()">⚡ PAGAR COM PIX</button>
+    <button class="btn-pgto btn-cartao" onclick="pagarCartao()">💳 CARTÃO (MAQUININHA)</button>
+    <button class="btn-pgto btn-pix" onclick="pagarPix()">⚡ PIX (NA TELA)</button>
 
     <div id="area-pix">
-        <p id="msg-pix"></p>
+        <p id="msg-pix" style="font-weight: bold;"></p>
         <img id="qrcode-img" src="" alt="QR Code Pix">
-        <p id="copia-e-cola" style="font-size: 10px; word-break: break-all;"></p>
+        <div id="copia-e-cola"></div>
     </div>
 </div>
 
 <script>
     let total = 0;
-    let itens = [];
-    const ACCESS_TOKEN = "COLOQUE_SEU_ACCESS_TOKEN_AQUI"; // Pegue no painel de dev do Mercado Pago
+    const ACCESS_TOKEN = "TEST-1998879028639759-021913-2300cc718fb9625b55744173f340f575-273401276"; // <--- COLE O TOKEN AQUI
 
     function add(nome, preco) {
         total += preco;
-        itens.push(nome);
         document.getElementById('total').innerText = total.toFixed(2);
-        document.getElementById('lista').innerHTML += `<div>${nome} - R$ ${preco.toFixed(2)}</div>`;
+        document.getElementById('lista').innerHTML += `<div style="padding:5px 0; border-bottom:1px solid #eee;">${nome} - R$ ${preco.toFixed(2)}</div>`;
     }
 
-    // FUNÇÃO 1: CARTÃO (MAQUININHA)
+    // 💳 FUNÇÃO CARTÃO (ACIONA APP MERCADO PAGO NO CELULAR)
     function pagarCartao() {
-        if(total === 0) return alert("Carrinho vazio!");
-        const valor = total.toFixed(2);
-        // O link abaixo "chama" o app do Mercado Pago no celular
-        const url = `mp-point://pay?amount=${valor}&description=Pedido_Totem&editable_amount=false`;
+        if(total === 0) return alert("Adicione itens!");
+        const url = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido_Totem&editable_amount=false`;
         window.location.href = url;
     }
 
-    // FUNÇÃO 2: PIX (GERA NA TELA)
+    // ⚡ FUNÇÃO PIX (GERA QR CODE VIA API)
     async function pagarPix() {
-        if(total === 0) return alert("Carrinho vazio!");
-        document.getElementById('msg-pix').innerText = "Gerando QR Code Pix...";
+        if(total === 0) return alert("Adicione itens!");
+        document.getElementById('msg-pix').innerText = "Gerando Pix...";
         
         const paymentData = {
             transaction_amount: total,
-            description: "Pedido Totem",
+            description: "Pedido Totem Lanches",
             payment_method_id: "pix",
-            payer: { email: "totem@loja.com" }
+            payer: { email: "cliente@exemplo.com" }
         };
 
         try {
@@ -84,7 +81,8 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${ACCESS_TOKEN}`
+                    "Authorization": `Bearer ${ACCESS_TOKEN}`,
+                    "X-Idempotency-Key": Math.random().toString(36).substring(7)
                 },
                 body: JSON.stringify(paymentData)
             });
@@ -97,15 +95,15 @@
                 
                 document.getElementById('qrcode-img').src = `data:image/png;base64,${qrCodeBase64}`;
                 document.getElementById('qrcode-img').style.display = "block";
-                document.getElementById('msg-pix').innerText = "Escaneie para pagar:";
+                document.getElementById('msg-pix').innerText = "Pague agora com Pix:";
                 document.getElementById('copia-e-cola').innerText = copiaCola;
+            } else {
+                alert("Erro: " + (data.message || "Verifique seu Token"));
             }
         } catch (error) {
-            console.error(error);
-            alert("Erro ao gerar Pix. Verifique seu Access Token.");
+            alert("Erro na conexão com Mercado Pago.");
         }
     }
 </script>
-
 </body>
 </html>
