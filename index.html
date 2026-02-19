@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Totem de Pedidos</title>
+    <style>
+        body { font-family: sans-serif; display: flex; }
+        .menu { width: 60%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item { border: 1px solid #ccc; padding: 10px; text-align: center; cursor: pointer; }
+        .carrinho { width: 40%; border-left: 2px solid #000; padding: 20px; }
+        button { background: #009ee3; color: white; border: none; padding: 10px; width: 100%; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+<div class="menu" id="cardapio">
+    <div class="item" onclick="add('X-Burguer', 20)">X-Burguer - R$20</div>
+    <div class="item" onclick="add('X-Salada', 22)">X-Salada - R$22</div>
+    <div class="item" onclick="add('Refrigerante', 7)">Refrigerante - R$7</div>
+    <div class="item" onclick="add('Suco', 10)">Suco - R$10</div>
+</div>
+
+<div class="carrinho">
+    <h2>Seu Pedido</h2>
+    <ul id="lista"></ul>
+    <h3>Total: R$ <span id="total">0</span></h3>
+    <button onclick="pagarCartao()">PAGAR NA MAQUININHA</button>
+</div>
+
+<script>
+    let total = 0;
+    let itens = [];
+
+    function add(nome, preco) {
+        total += preco;
+        itens.push(nome);
+        document.getElementById('total').innerText = total;
+        document.getElementById('lista').innerHTML += `<li>${nome} - R$${preco}</li>`;
+    }
+
+    function pagarCartao() {
+        if(total === 0) return alert("Adicione algo ao carrinho!");
+        
+        // O valor precisa estar em centavos ou com ponto para o MP
+        const valorFormatado = total.toFixed(2); 
+        const url = `mp-point://pay?amount=${valorFormatado}&description=PedidoTotem&editable_amount=false`;
+        
+        // Isso faz o navegador "pular" para o App do Mercado Pago
+        window.location.href = url;
+    }
+</script>
+</body>
+</html>
