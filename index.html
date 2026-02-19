@@ -102,7 +102,15 @@
 <script>
     let total = 0;
     let pedido = [];
-    let numeroPedido = Math.floor(Math.random() * 900) + 100;
+    
+    function proximoNumero() {
+        let ultimo = parseInt(localStorage.getItem("ultimoNumero") || "0");
+        let novo = ultimo + 1;
+        localStorage.setItem("ultimoNumero", novo);
+        return novo;
+    }
+    let numeroPedido = proximoNumero();
+    
 
     function render() {
         let html = "";
@@ -210,10 +218,10 @@
     fecharPix();
     imprimir();
     
-    // 3. LIMPAR TELA
+     // 3. LIMPAR TELA
     total = 0;
     pedido = [];
-    numeroPedido = Math.floor(Math.random() * 900) + 100;
+    numeroPedido = proximoNumero(); // <--- AQUI CHAMA A FUNÇÃO EM VEZ DO RANDOM
     document.getElementById("nome-cliente").value = "";
     document.getElementById("obsInput").value = "";
     render();
