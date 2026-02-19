@@ -34,7 +34,6 @@ body {
     font-size: 22px;
     font-weight: bold;
     border-bottom: 1px solid var(--border);
-    z-index: 10;
 }
 
 /* MENU */
@@ -58,7 +57,7 @@ body {
 }
 
 .item:hover {
-    transform: translateY(-6px) scale(1.02);
+    transform: translateY(-6px);
 }
 
 .item img {
@@ -74,10 +73,6 @@ body {
     justify-content: space-between;
 }
 
-.item-info span {
-    color: var(--primary);
-}
-
 /* CARRINHO */
 .carrinho {
     width: 40%;
@@ -88,10 +83,6 @@ body {
     flex-direction: column;
 }
 
-.carrinho h2 {
-    margin-bottom: 10px;
-}
-
 .lista {
     flex-grow: 1;
     overflow-y: auto;
@@ -99,16 +90,33 @@ body {
 }
 
 .item-carrinho {
-    display: flex;
-    justify-content: space-between;
+    background: #f8fafc;
     padding: 10px;
     border-radius: 10px;
-    margin-bottom: 8px;
-    background: #f8fafc;
+    margin-bottom: 10px;
 }
 
+.top-item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.obs {
+    font-size: 12px;
+    color: gray;
+}
+
+.remove {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* INPUT */
 .input {
-    padding: 14px;
+    padding: 12px;
     border-radius: 10px;
     border: 1px solid var(--border);
     margin-bottom: 10px;
@@ -122,22 +130,10 @@ body {
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
-    transition: .2s;
 }
 
-.btn:hover {
-    transform: scale(1.03);
-}
-
-.cartao {
-    background: var(--primary);
-    color: white;
-}
-
-.pix {
-    background: var(--green);
-    color: white;
-}
+.cartao { background: var(--primary); color: white; }
+.pix { background: var(--green); color: white; }
 
 /* MODAL */
 #modal {
@@ -155,14 +151,9 @@ body {
     padding: 25px;
     border-radius: 20px;
     text-align: center;
-    width: 280px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 
-#qr {
-    width: 200px;
-    margin: 15px 0;
-}
+#qr { width: 200px; }
 
 .status {
     color: var(--primary);
@@ -177,7 +168,7 @@ body {
 
 <body>
 
-<div class="header">🍔 KINGIS BURGER</div>
+<div class="header">AUTO ATENDIMENTO MYDI</div>
 
 <div class="menu">
 
@@ -204,9 +195,10 @@ body {
 </div>
 
 <div class="carrinho">
-<h2>🧾 Pedido</h2>
+<h2>Meu Pedido</h2>
 
 <input id="nome" class="input" placeholder="Seu nome">
+<input id="obsInput" class="input" placeholder="Observação (ex: sem cebola)">
 
 <div id="lista" class="lista"></div>
 
@@ -231,17 +223,39 @@ let pedido = [];
 let numero = Math.floor(Math.random()*900)+100;
 let pagamentoConfirmado = false;
 
-function add(nome, preco){
-    total += preco;
-    pedido.push({nome, preco});
+function render(){
+    let listaHTML = "";
 
+    pedido.forEach((item, index)=>{
+        listaHTML += `
+        <div class="item-carrinho">
+            <div class="top-item">
+                <span>${item.nome}</span>
+                <button class="remove" onclick="remover(${index})">X</button>
+            </div>
+            <div>R$${item.preco}</div>
+            ${item.obs ? `<div class="obs">${item.obs}</div>` : ""}
+        </div>`;
+    });
+
+    document.getElementById('lista').innerHTML = listaHTML;
     document.getElementById('total').innerText = total.toFixed(2);
+}
 
-    document.getElementById('lista').innerHTML += `
-    <div class="item-carrinho">
-        <span>${nome}</span>
-        <span>R$${preco}</span>
-    </div>`;
+function add(nome, preco){
+    let obs = document.getElementById('obsInput').value;
+
+    pedido.push({nome, preco, obs});
+    total += preco;
+
+    document.getElementById('obsInput').value = "";
+    render();
+}
+
+function remover(index){
+    total -= pedido[index].preco;
+    pedido.splice(index,1);
+    render();
 }
 
 function pagarCartao(){
@@ -271,7 +285,6 @@ function verificarPagamento(){
     },2000);
 }
 
-// ENTER simula pagamento
 document.addEventListener("keydown", e=>{
     if(e.key === "Enter"){
         pagamentoConfirmado = true;
@@ -286,19 +299,19 @@ function finalizar(){
     pedido = [];
     numero = Math.floor(Math.random()*900)+100;
 
-    document.getElementById('total').innerText = "0.00";
-    document.getElementById('lista').innerHTML = "";
     document.getElementById('nome').value = "";
     document.getElementById('modal').style.display = 'none';
+
+    render();
 }
 
 function imprimir(){
     let nome = document.getElementById('nome').value || "Cliente";
 
     let listaHtml = pedido.map(i => `
-    <div style="display:flex;justify-content:space-between;">
-        <span>${i.nome}</span>
-        <span>R$${i.preco}</span>
+    <div>
+        ${i.nome} - R$${i.preco}
+        ${i.obs ? `<br><small>${i.obs}</small>` : ""}
     </div>`).join("");
 
     let w = window.open();
