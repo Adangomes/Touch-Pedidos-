@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Totem Autoatendimento</title>
+<title>Totem Autoatendimento PRO</title>
 
 <style>
 :root {
-    --bg: #f8fafc;
+    --bg: #f1f5f9;
     --card: #ffffff;
     --primary: #ef4444;
     --green: #10b981;
@@ -16,57 +15,63 @@
     --border: #e2e8f0;
 }
 
+* { box-sizing: border-box; }
+
 body {
-    font-family: 'Segoe UI', sans-serif;
     margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
     display: flex;
     height: 100vh;
-    background: linear-gradient(135deg, #f8fafc, #eef2f7);
 }
 
 /* HEADER */
 .header {
     position: fixed;
     width: 60%;
+    padding: 18px;
     background: white;
-    padding: 15px;
+    font-size: 22px;
     font-weight: bold;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
 }
 
 /* MENU */
 .menu {
     width: 60%;
-    margin-top: 60px;
+    margin-top: 70px;
     padding: 20px;
     display: grid;
     grid-template-columns: repeat(2,1fr);
-    gap: 15px;
+    gap: 20px;
     overflow-y: auto;
 }
 
 .item {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    cursor: pointer;
+    background: var(--card);
+    border-radius: 18px;
     overflow: hidden;
-    transition: .2s;
+    cursor: pointer;
+    transition: .25s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 .item:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px) scale(1.02);
 }
 
 .item img {
     width: 100%;
-    height: 140px;
+    height: 150px;
     object-fit: cover;
 }
 
 .item-info {
-    padding: 10px;
+    padding: 12px;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
 }
 
 .item-info span {
@@ -83,53 +88,81 @@ body {
     flex-direction: column;
 }
 
-.lista { flex-grow:1; overflow:auto; }
+.carrinho h2 {
+    margin-bottom: 10px;
+}
+
+.lista {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+}
 
 .item-carrinho {
-    display:flex;
-    justify-content:space-between;
-    border-bottom:1px solid #eee;
-    padding:10px 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: #f8fafc;
 }
 
 .input {
-    padding:15px;
-    border-radius:10px;
-    border:1px solid #ddd;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
 }
 
 /* BOTÕES */
 .btn {
-    padding:15px;
-    border:none;
-    border-radius:10px;
-    margin-top:10px;
-    font-weight:bold;
-    cursor:pointer;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: .2s;
 }
 
-.cartao { background: var(--primary); color:white; }
-.pix { background: var(--green); color:white; }
+.btn:hover {
+    transform: scale(1.03);
+}
+
+.cartao {
+    background: var(--primary);
+    color: white;
+}
+
+.pix {
+    background: var(--green);
+    color: white;
+}
 
 /* MODAL */
 #modal {
-    display:none;
-    position:fixed;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.8);
-    justify-content:center;
-    align-items:center;
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
 }
 
 .box {
-    background:white;
-    padding:20px;
-    border-radius:20px;
-    text-align:center;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    width: 280px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 
-#qr { width:220px; }
+#qr {
+    width: 200px;
+    margin: 15px 0;
+}
 
 .status {
     color: var(--primary);
@@ -140,7 +173,6 @@ body {
     50% { opacity: 0.3; }
 }
 </style>
-
 </head>
 
 <body>
@@ -148,19 +180,31 @@ body {
 <div class="header">🍔 KINGIS BURGER</div>
 
 <div class="menu">
+
 <div class="item" onclick="add('X-Burguer',20)">
-<img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
+<img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd">
 <div class="item-info">X-Burguer <span>R$20</span></div>
 </div>
 
 <div class="item" onclick="add('X-Bacon',25)">
-<img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400">
+<img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b">
 <div class="item-info">X-Bacon <span>R$25</span></div>
 </div>
+
+<div class="item" onclick="add('X-Salada',22)">
+<img src="https://images.unsplash.com/photo-1550547660-d9450f859349">
+<div class="item-info">X-Salada <span>R$22</span></div>
+</div>
+
+<div class="item" onclick="add('X-Tudo',30)">
+<img src="https://images.unsplash.com/photo-1606755962773-d324e0a13086">
+<div class="item-info">X-Tudo <span>R$30</span></div>
+</div>
+
 </div>
 
 <div class="carrinho">
-<h2>Pedido</h2>
+<h2>🧾 Pedido</h2>
 
 <input id="nome" class="input" placeholder="Seu nome">
 
@@ -168,7 +212,8 @@ body {
 
 <h2>Total: R$ <span id="total">0.00</span></h2>
 
-<button class="btn cartao" onclick="pagarCartao()">Cartão</button> <button class="btn pix" onclick="gerarPix()">Pix</button>
+<button class="btn cartao" onclick="pagarCartao()">💳 Cartão</button>
+<button class="btn pix" onclick="gerarPix()">⚡ Pix</button>
 
 </div>
 
@@ -181,97 +226,98 @@ body {
 </div>
 
 <script>
-let total=0;
-let pedido=[];
-let numero=Math.floor(Math.random()*900)+100;
-let pagamentoConfirmado=false;
+let total = 0;
+let pedido = [];
+let numero = Math.floor(Math.random()*900)+100;
+let pagamentoConfirmado = false;
 
-function add(nome,preco){
- total+=preco;
- pedido.push({nome,preco});
- document.getElementById('total').innerText=total.toFixed(2);
+function add(nome, preco){
+    total += preco;
+    pedido.push({nome, preco});
 
- document.getElementById('lista').innerHTML+=`
- <div class="item-carrinho">
- <span>${nome}</span>
- <span>R$${preco}</span>
- </div>`;
+    document.getElementById('total').innerText = total.toFixed(2);
+
+    document.getElementById('lista').innerHTML += `
+    <div class="item-carrinho">
+        <span>${nome}</span>
+        <span>R$${preco}</span>
+    </div>`;
 }
 
 function pagarCartao(){
- if(total<=0)return alert("Carrinho vazio");
- alert("Pagamento via maquininha");
- finalizar();
+    if(total <= 0) return alert("Carrinho vazio");
+    alert("Pagamento na maquininha");
+    finalizar();
 }
 
 function gerarPix(){
- if(total<=0)return alert("Carrinho vazio");
+    if(total <= 0) return alert("Carrinho vazio");
 
- document.getElementById('modal').style.display='flex';
- pagamentoConfirmado=false;
+    document.getElementById('modal').style.display = 'flex';
+    pagamentoConfirmado = false;
 
- // SIMULA QR
- document.getElementById('qr').src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX-"+total;
+    document.getElementById('qr').src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX-"+total;
 
- verificarPagamento();
+    verificarPagamento();
 }
 
 function verificarPagamento(){
- let loop=setInterval(()=>{
- if(pagamentoConfirmado){
- clearInterval(loop);
- finalizar();
- }
- },2000);
+    let loop = setInterval(()=>{
+        if(pagamentoConfirmado){
+            clearInterval(loop);
+            finalizar();
+        }
+    },2000);
 }
 
-// BOTÃO OCULTO PRA TESTE
-document.addEventListener("keydown",e=>{
- if(e.key==="Enter"){
- pagamentoConfirmado=true;
- }
+// ENTER simula pagamento
+document.addEventListener("keydown", e=>{
+    if(e.key === "Enter"){
+        pagamentoConfirmado = true;
+    }
 });
 
 function finalizar(){
- imprimir();
- alert("Pagamento confirmado!");
+    imprimir();
+    alert("Pagamento confirmado!");
 
- total=0;
- pedido=[];
- numero=Math.floor(Math.random()*900)+100;
+    total = 0;
+    pedido = [];
+    numero = Math.floor(Math.random()*900)+100;
 
- document.getElementById('total').innerText="0.00";
- document.getElementById('lista').innerHTML="";
- document.getElementById('nome').value="";
- document.getElementById('modal').style.display='none';
+    document.getElementById('total').innerText = "0.00";
+    document.getElementById('lista').innerHTML = "";
+    document.getElementById('nome').value = "";
+    document.getElementById('modal').style.display = 'none';
 }
 
 function imprimir(){
- let nome=document.getElementById('nome').value||"Cliente";
+    let nome = document.getElementById('nome').value || "Cliente";
 
- let listaHtml=pedido.map(i=>`
- <div style="display:flex;justify-content:space-between;">
- <span>${i.nome}</span>
- <span>R$${i.preco}</span>
- </div>`).join("");
+    let listaHtml = pedido.map(i => `
+    <div style="display:flex;justify-content:space-between;">
+        <span>${i.nome}</span>
+        <span>R$${i.preco}</span>
+    </div>`).join("");
 
- let w=window.open();
- w.document.write(`
- <body style="font-family:monospace">
- <center><b>PEDIDO #${numero}</b></center>
- Cliente: ${nome}<br>
- ${new Date().toLocaleString()}<br>
- <hr>
- ${listaHtml}
- <hr>
- <b>Total: R$${total}</b>
- <script>
- window.onload=function(){
- window.print();
- setTimeout(()=>window.close(),500);
- }
- <\/script>
- `);
+    let w = window.open();
+    w.document.write(`
+    <body style="font-family:monospace">
+    <center><b>PEDIDO #${numero}</b></center>
+    Cliente: ${nome}<br>
+    ${new Date().toLocaleString()}<br>
+    <hr>
+    ${listaHtml}
+    <hr>
+    <b>Total: R$${total}</b>
+    <script>
+    window.onload=function(){
+        window.print();
+        setTimeout(()=>window.close(),500);
+    }
+    <\/script>
+    `);
 }
 </script>
 
