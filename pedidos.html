@@ -3,137 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <title>Painel de Pedidos</title>
-
 <style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: #0f172a;
-    color: white;
-}
-
-/* TOPO */
-.topo {
-    padding: 20px;
-    background: #020617;
-    font-size: 24px;
-    text-align: center;
-}
-
-/* GRID */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 15px;
-    padding: 20px;
-}
-
-/* CARD */
-.card {
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 15px;
-}
-
-.numero {
-    font-size: 40px;
-    font-weight: bold;
-    color: #22c55e;
-}
-
-.nome {
-    margin-bottom: 10px;
-}
-
-.item {
-    font-size: 14px;
-}
-
-.btn {
-    margin-top: 10px;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    background: #22c55e;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* TELA GRANDE */
-.tela-pronto {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: black;
-    text-align: center;
-    padding: 20px;
-}
-
-.big {
-    font-size: 60px;
-    color: #22c55e;
-}
+    body { margin: 0; font-family: Arial; background: #0f172a; color: white; }
+    .topo { padding: 20px; background: #020617; font-size: 24px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+    .grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 15px; padding: 20px; }
+    .card { background: #1e293b; padding: 15px; border-radius: 15px; position: relative; }
+    .numero { font-size: 40px; font-weight: bold; color: #22c55e; }
+    .item { font-size: 14px; color: #cbd5e1; }
+    .btn { margin-top: 10px; padding: 10px; border: none; border-radius: 10px; background: #22c55e; color: black; font-weight: bold; cursor: pointer; width: 100%; }
+    .tela-pronto { position: fixed; bottom: 0; width: 100%; background: black; text-align: center; padding: 20px; border-top: 2px solid #22c55e; }
+    .big { font-size: 60px; color: #22c55e; font-weight: bold; }
+    .admin-btns { display: flex; gap: 10px; padding-right: 20px; }
+    .btn-reset { background: #ef4444; color: white; padding: 8px; border-radius: 5px; font-size: 12px; border: none; cursor: pointer; }
 </style>
 </head>
-
 <body>
 
-<div class="topo">PAINEL DE PEDIDOS</div>
+<div class="topo">
+    <div style="width: 200px"></div> <span>PAINEL DE PEDIDOS</span>
+    <div class="admin-btns">
+        <button class="btn-reset" onclick="resetarContador()">Zerar Senhas (01)</button>
+        <button class="btn-reset" style="background:#64748b" onclick="limparTudo()">Limpar Painel</button>
+    </div>
+</div>
 
 <div id="grid" class="grid"></div>
 
 <div class="tela-pronto">
-    <div>ÚLTIMO CHAMADO</div>
+    <div>PRÓXIMO CLIENTE</div>
     <div id="chamada" class="big">---</div>
 </div>
 
 <script>
 function carregar(){
     let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-
     let html = "";
-
     pedidos.forEach((p, index)=>{
         if(p.status === "preparando"){
             html += `
             <div class="card">
-                <div class="numero">#${p.numero}</div>
-                <div class="nome">${p.nome}</div>
-                ${p.itens.map(i=>`<div class="item">${i.nome}</div>`).join("")}
+                <div class="numero">#${p.numero.toString().padStart(2, '0')}</div>
+                <div class="nome"><strong>${p.nome}</strong></div>
+                <hr style="border:0; border-top:1px solid #334155">
+                ${p.itens.map(i=>`<div class="item">• ${i.nome} ${i.obs ? `<br><small style="color:#fbbf24">(${i.obs})</small>` : ""}</div>`).join("")}
                 <button class="btn" onclick="pronto(${index})">PRONTO</button>
             </div>`;
         }
     });
-
     document.getElementById("grid").innerHTML = html;
 }
 
 function pronto(index){
     let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
-
     pedidos[index].status = "pronto";
     localStorage.setItem("pedidos", JSON.stringify(pedidos));
-
     chamar(pedidos[index]);
-
     carregar();
 }
 
 function chamar(pedido){
     let texto = `Pedido número ${pedido.numero}, ${pedido.nome}, está pronto`;
-
     let msg = new SpeechSynthesisUtterance(texto);
     msg.lang = "pt-BR";
     speechSynthesis.speak(msg);
-
-    document.getElementById("chamada").innerText = "#" + pedido.numero;
+    document.getElementById("chamada").innerText = "#" + pedido.numero.toString().padStart(2, '0');
 }
 
-// Atualiza automático
+function resetarContador() {
+    if(confirm("Deseja voltar a senha para 01?")) {
+        localStorage.setItem("ultimoNumero", "0");
+        alert("O próximo pedido será o #01");
+    }
+}
+
+function limparTudo() {
+    if(confirm("Deseja apagar todos os cards da tela?")) {
+        localStorage.setItem("pedidos", "[]");
+        carregar();
+    }
+}
+
 setInterval(carregar, 1000);
 carregar();
 </script>
-
 </body>
 </html>
