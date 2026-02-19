@@ -25,11 +25,7 @@
     .item:hover { transform: translateY(-6px); }
     .item img { width: 100%; height: 180px; object-fit: cover; }
     .item-info { padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    .item-info span { 
-        color: #000; 
-        font-size: 1.2rem; 
-        font-weight: bold; 
-    }
+    .item-info span { color: #000; font-size: 1.2rem; font-weight: bold; }
 
     .carrinho { width: 40%; background: white; padding: 25px; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
     .lista { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
@@ -52,22 +48,8 @@
     
     @keyframes pisca { 50% { opacity: 0.3; } }
 
-    /* --- LÓGICA DE IMPRESSÃO PARA CUPOM 58mm --- */
     @media print {
-        @page { margin: 0; }
         body * { display: none !important; }
-        #area-impressao, #area-impressao * { 
-            display: block !important; 
-            visibility: visible !important; 
-        }
-        #area-impressao {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-        }
-        /* Remove imagens pesadas na hora de imprimir */
-        img { display: none !important; }
     }
 </style>
 </head>
@@ -165,6 +147,7 @@
         if(total <= 0) return alert("Carrinho vazio!");
         const nome = document.getElementById('nome-cliente').value;
         if(!nome) return alert("Por favor, digite seu nome.");
+        // O número do pedido vai para a descrição
         window.location.href = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido-${numeroPedido}&editable_amount=false`;
     }
 
@@ -172,6 +155,7 @@
         if(total <= 0) return alert("Carrinho vazio!");
         const nomeCli = document.getElementById('nome-cliente').value;
         if(!nomeCli) return alert("Por favor, digite seu nome.");
+        
         document.getElementById('modal').style.display = 'flex';
         document.getElementById('qr').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
         const idempotencyKey = Math.random().toString(36).substring(2, 15);
@@ -209,26 +193,31 @@
     function confirmarPagamentoPix() {
         const nomeCli = document.getElementById("nome-cliente").value || "Cliente";
         
-        // 1. PRIMEIRO SALVA NO BANCO
+        // 1. SALVA NO BANCO LOCAL
         let pedidosNoBanco = JSON.parse(localStorage.getItem("pedidos") || "[]");
         pedidosNoBanco.push({
             numero: numeroPedido,
             nome: nomeCli,
             itens: [...pedido],
             total: total,
-            status: "preparando"
+            status: "preparando",
+            hora: new Date().toLocaleTimeString()
         });
         localStorage.setItem("pedidos", JSON.stringify(pedidosNoBanco));
 
-        // 2. SEGUNDO IMPRIME (Enquanto os dados ainda estão na tela)
+        // 2. DISPARA IMPRESSÃO (Função otimizada para não travar)
         imprimir();
 
-        // 3. TERCEIRO LIMPA TUDO
-        alert("Pedido enviado para a cozinha!");
+        // 3. LIMPA TUDO E ATUALIZA TELA
+        alert("Pedido #" + numeroPedido + " enviado para a cozinha!");
         fecharPix();
+        
+        // Reset de variáveis
         total = 0;
         pedido = [];
-        numeroPedido = proximoNumero();
+        numeroPedido = proximoNumero(); 
+        
+        // Reset de campos
         document.getElementById("nome-cliente").value = "";
         document.getElementById("obsInput").value = "";
         render();
@@ -237,7 +226,7 @@
     function imprimir() {
         const nomeCli = document.getElementById("nome-cliente").value || "Cliente";
         
-        // 1. Capturamos os dados AGORA antes de qualquer limpeza
+        // Captura o conteúdo dos itens antes de limpar o array 'pedido'
         const itensParaImprimir = pedido.map(i => `
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                 <span>1x ${i.nome}</span>
@@ -249,7 +238,6 @@
         const totalParaImprimir = total.toFixed(2);
         const numeroParaImprimir = numeroPedido.toString().padStart(2, '0');
 
-        // 2. Criamos o iframe
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '100%';
@@ -261,7 +249,6 @@
 
         const doc = iframe.contentWindow.document;
 
-        // 3. Escrevemos o conteúdo
         doc.write(`
             <html>
                 <head>
@@ -287,12 +274,19 @@
                     <center><b style="font-size:18px;">TOTAL: R$ ${totalParaImprimir}</b></center>
                     <br>
                     <center>Aguarde ser chamado!<br>Obrigado!</center>
-                    <script>
-                        // O segredo: só libera a impressão após o window.onload do iframe
-                        window.onload = function() {
-                            window.focus();
-                            setTimeout(function() { window.print(); }, 200);
-                        };
-                    </script>
                 </body>
             </html>
+        `);
+        doc.close();
+
+        // Delay para garantir que o Android renderize o conteúdo do iframe antes de imprimir
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            // Remove o iframe após a janela de impressão abrir
+            setTimeout(() => document.body.removeChild(iframe), 1000);
+        }, 500);
+    }
+</script>
+</body>
+</html>
