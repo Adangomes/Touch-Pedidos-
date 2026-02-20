@@ -14,9 +14,10 @@ const TOKEN = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-
 // 🧾 CRIAR PAGAMENTO PIX
 // ==============================
 app.post("/criar-pix", async (req, res) => {
-    const { total, nome, pedido } = req.body;
+    const { total, nome } = req.body;
 
     try {
+
         const response = await axios.post(
             "https://api.mercadopago.com/v1/payments",
             {
@@ -30,34 +31,35 @@ app.post("/criar-pix", async (req, res) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${TOKEN}`
+                    Authorization: `Bearer ${TOKEN}`,
+                    "X-Idempotency-Key": Date.now().toString()
                 }
             }
         );
 
         const data = response.data;
 
-        console.log("🔥 RESPOSTA MP:", data); // 👈 IMPORTANTE
+        console.log("🔥 MP OK:", data.id);
 
-        // ✅ VALIDAÇÃO SEGURA
         if (!data.point_of_interaction) {
-            return res.status(500).json({ erro: "Sem dados de QR" });
+            return res.status(500).json({ erro: "Sem QR" });
         }
 
         const qr = data.point_of_interaction.transaction_data.qr_code_base64;
 
         if (!qr) {
-            return res.status(500).json({ erro: "QR não gerado" });
+            return res.status(500).json({ erro: "QR vazio" });
         }
 
         res.json({
-            qr: `data:image/png;base64,${qr}`,
-            pagamento_id: data.id
+            qr: `data:image/png;base64,${qr}`
         });
 
     } catch (err) {
         console.log("❌ ERRO MP:", err.response?.data || err.message);
-        res.status(500).json({ erro: "Erro ao gerar Pix" });
+        res.status(500).json({
+            erro: err.response?.data || "Erro geral"
+        });
     }
 });
 
