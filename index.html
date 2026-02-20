@@ -179,10 +179,9 @@ function fecharPix(){
     function finalizar(){
     imprimir();
 
-    // cria mensagem temporária
     const msg = document.createElement("div");
     msg.innerText = "Pagamento aprovado ✔️";
-    
+
     msg.style.position = "fixed";
     msg.style.top = "50%";
     msg.style.left = "50%";
@@ -204,25 +203,27 @@ function fecharPix(){
         msg.style.opacity = "1";
     }, 50);
 
-    // fade out + remover
+    // depois de 1.5s começa a fechar tudo
     setTimeout(() => {
         msg.style.opacity = "0";
+
+        // 🔥 FECHA O PIX AQUI
+        fecharPix();
+
+        // reset sistema
+        total = 0;
+        pedido = [];
+        numero = Math.floor(Math.random()*900)+100;
+
+        document.getElementById('nome').value = "";
+        render();
+
         setTimeout(() => {
             msg.remove();
         }, 300);
-    }, 1800); // tempo total na tela (1.8s)
 
-    // reset sistema
-    total = 0;
-    pedido = [];
-    numero = Math.floor(Math.random()*900)+100;
-
-    document.getElementById('nome').value = "";
-    document.getElementById('modal').style.display = 'none';
-
-    render();
+    }, 1500);
 }
-
 </script>
 
 </body>
