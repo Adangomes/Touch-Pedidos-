@@ -157,7 +157,7 @@ async function gerarPix(){
 function fecharPix(){
     document.getElementById("modal").style.display="none";
 }
-    function verificarPagamento(){
+   function verificarPagamento(){
 
     const intervalo = setInterval(async ()=>{
 
@@ -168,7 +168,8 @@ function fecharPix(){
 
         console.log("STATUS:", data);
 
-        if(data.pago === true){
+        // 🔥 CORRETO
+        if(data.pago){
             clearInterval(intervalo);
             finalizarPedido();
         }
