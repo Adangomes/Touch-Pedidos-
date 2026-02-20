@@ -449,132 +449,46 @@
 
 
     function imprimir() {
-
-        const nomeCli = document.getElementById("nome-cliente").value || "Cliente";
-
-        
-
-        // Captura o conteúdo dos itens antes de limpar o array 'pedido'
-
-        const itensParaImprimir = pedido.map(i => `
-
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-
-                <span>1x ${i.nome}</span>
-
-                <span>R$ ${i.preco.toFixed(2)}</span>
-
-            </div>
-
-            ${i.obs ? `<div style="font-size:11px; margin-bottom:5px;">* ${i.obs}</div>` : ""}
-
-        `).join('');
-
-
-
-        const totalParaImprimir = total.toFixed(2);
-
-        const numeroParaImprimir = numeroPedido.toString().padStart(2, '0');
-
-
-
-        const iframe = document.createElement('iframe');
-
-        iframe.style.position = 'fixed';
-
-        iframe.style.right = '100%';
-
-        iframe.style.bottom = '100%';
-
-        iframe.style.width = '0';
-
-        iframe.style.height = '0';
-
-        iframe.style.border = 'none';
-
-        document.body.appendChild(iframe);
-
-
-
-        const doc = iframe.contentWindow.document;
-
-
-
-        doc.write(`
-
-            <html>
-
-                <head>
-
-                    <style>
-
-                        body { font-family: monospace; width: 58mm; padding: 10px; margin: 0; color: #000; background: #fff; }
-
-                        center { text-align: center; }
-
-                        hr { border: 0; border-top: 1px dashed #000; margin: 10px 0; }
-
-                        .topo { border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-
-                    </style>
-
-                </head>
-
-                <body>
-
-                    <div class="topo">
-
-                        <center>
-
-                            <b style="font-size:18px;">MYDI DELIVERY</b><br>
-
-                            <b style="font-size:22px;">PEDIDO #${numeroParaImprimir}</b>
-
-                        </center>
-
-                    </div>
-
-                    <b>CLIENTE:</b> ${nomeCli.toUpperCase()}<br>
-
-                    <b>DATA:</b> ${new Date().toLocaleTimeString('pt-BR')}<br>
-
-                    <hr>
-
-                    ${itensParaImprimir}
-
-                    <hr>
-
-                    <center><b style="font-size:18px;">TOTAL: R$ ${totalParaImprimir}</b></center>
-
-                    <br>
-
-                    <center>Aguarde ser chamado!<br>Obrigado!</center>
-
-                </body>
-
-            </html>
-
-        `);
-
-        doc.close();
-
-
-
-        // Delay para garantir que o Android renderize o conteúdo do iframe antes de imprimir
-
-        setTimeout(() => {
-
-            iframe.contentWindow.focus();
-
-            iframe.contentWindow.print();
-
-            // Remove o iframe após a janela de impressão abrir
-
-            setTimeout(() => document.body.removeChild(iframe), 1000);
-
-        }, 500);
-
-    }
+    const nomeCli = document.getElementById("nome-cliente").value || "Cliente";
+    const numPedido = localStorage.getItem("proximoNumero") || "01";
+    
+    // Conteúdo formatado para bobina térmica
+    const conteudo = `
+        <html>
+        <head>
+            <style>
+                @page { margin: 0; }
+                body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; margin: 0; }
+                .center { text-align: center; }
+                .bold { font-weight: bold; }
+                hr { border: 0; border-top: 1px dashed #000; }
+            </style>
+        </head>
+        <body>
+            <div class="center bold" style="font-size: 18px;">MYDI DELIVERY</div>
+            <div class="center bold" style="font-size: 22px;">PEDIDO #${numPedido.padStart(2, '0')}</div>
+            <hr>
+            <div><b>CLIENTE:</b> ${nomeCli.toUpperCase()}</div>
+            <div><b>HORA:</b> ${new Date().toLocaleTimeString()}</div>
+            <hr>
+            ${pedido.map(i => `<div>1x ${i.nome} - R$ ${i.preco.toFixed(2)}</div>`).join('')}
+            <hr>
+            <div class="center bold" style="font-size: 18px;">TOTAL: R$ ${total.toFixed(2)}</div>
+            <br><center>Obrigado!</center><br>
+        </body>
+        </html>
+    `;
+
+    const win = window.open('', '', 'width=300,height=600');
+    win.document.write(conteudo);
+    win.document.close();
+
+    // Aguarda carregar e dispara a janela de impressão do sistema
+    setTimeout(() => {
+        win.print();
+        win.close();
+    }, 500);
+}
 
 </script>
 
