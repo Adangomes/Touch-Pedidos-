@@ -175,6 +175,21 @@ function fecharPix(){
 
     }, 3000);
 }
+    function finalizarPedido(){
+
+    alert("✅ PAGAMENTO APROVADO!");
+
+    fecharPix();
+
+    // reset
+    total = 0;
+    pedido = [];
+    document.getElementById("nome").value = "";
+
+    render();
+
+    // 👉 aqui você pode chamar impressão depois
+}
 
 </script>
 
