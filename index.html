@@ -1,1 +1,283 @@
-<!DOCTYPE html> <html lang="pt-br"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Totem Autoatendimento PRO</title> <style> :root { --bg: #f1f5f9; --card: #ffffff; --primary: #ef4444; --green: #10b981; --text: #0f172a; --border: #e2e8f0; --gold: #c5a059; } * { box-sizing: border-box; } body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; height: 100vh; color: var(--text); } .header { position: fixed; width: 60%; padding: 18px; background: white; font-size: 22px; font-weight: bold; border-bottom: 1px solid var(--border); z-index: 10; } .menu { width: 60%; margin-top: 70px; padding: 20px; display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; overflow-y: auto; } .item { background: var(--card); border-radius: 18px; overflow: hidden; cursor: pointer; transition: .25s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); } .item:hover { transform: translateY(-6px); } .item img { width: 100%; height: 180px; object-fit: cover; } .item-info { padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; } .item-info span { color: #000; font-size: 1.2rem; font-weight: bold; } .carrinho { width: 40%; background: white; padding: 25px; border-left: 1px solid var(--border); display: flex; flex-direction: column; } .lista { flex-grow: 1; overflow-y: auto; margin-top: 10px; } .item-carrinho { background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #edf2f7; } .top-item { display: flex; justify-content: space-between; font-weight: bold; } .obs-text { font-size: 12px; color: #64748b; margin-top: 5px; font-style: italic; } .remove { background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 1.1rem; } .input { padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; width: 100%; font-size: 1rem; } .btn { padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; font-size: 1rem; text-transform: uppercase; } .cartao { background: #009ee3; color: white; } .pix { background: var(--green); color: white; } #modal { display: none; position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100; } .box { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 350px; } #qr { width: 250px; height: 250px; margin: 15px 0; border: 1px solid #eee; } .status { color: #009ee3; font-weight: bold; animation: pisca 1.5s infinite; } @keyframes pisca { 50% { opacity: 0.3; } } @media print { body * { display: none !important; } } </style> </head> <body> <div id="modal"> <div class="box"> <h3 style="margin:0">Escaneie para Pagar</h3> <img id="qr" src="" alt="QR Code Pix"> <p class="status">Aguardando confirmação do banco...</p> <button class="btn pix" onclick="confirmarPagamentoPix()">JÁ PAGUEI (CONFIRMAR)</button> <button onclick="fecharPix()" style="margin-top:15px; background:none; border:none; text-decoration:underline; cursor:pointer; color:gray">Cancelar</button> </div> </div> <div class="header">AUTO ATENDIMENTO MYDI</div> <div class="menu"> <div class="item" onclick="add('X-Burguer', 20.00)"> <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"> <div class="item-info">X-Burguer <span>R$ 20</span></div> </div> <div class="item" onclick="add('X-Bacon', 25.00)"> <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400"> <div class="item-info">X-Bacon <span>R$ 25</span></div> </div> <div class="item" onclick="add('X-Salada', 22.00)"> <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400"> <div class="item-info">X-Salada <span>R$ 22</span></div> </div> <div class="item" onclick="add('X-Tudo', 30.00)"> <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400"> <div class="item-info">X-Tudo <span>R$ 30</span></div> </div> </div> <div class="carrinho"> <h2 style="margin-top:0">Meu Pedido</h2> <input id="nome-cliente" class="input" placeholder="Digite seu nome"> <input id="obsInput" class="input" placeholder="Observação (ex: sem cebola)"> <div id="lista" class="lista"></div> <hr style="border:0; border-top:1px solid #eee; margin:15px 0;"> <h2 style="margin:0">Total: R$ <span id="total">0.00</span></h2> <button class="btn cartao" onclick="pagarCartao()">Pagar com Cartão</button> <button class="btn pix" onclick="gerarPix()">Pagar com Pix</button> </div> <script> let total = 0; let pedido = []; function proximoNumero() { let ultimo = parseInt(localStorage.getItem("ultimoNumero") || "0"); let novo = ultimo + 1; localStorage.setItem("ultimoNumero", novo); return novo; } let numeroPedido = proximoNumero(); function render() { let html = ""; pedido.forEach((item, index) => { html += <div class="item-carrinho"> <div class="top-item"> <span>${item.nome}</span> <button class="remove" onclick="remover(${index})">&times;</button> </div> <div style="color:var(--green)">R$ ${item.preco.toFixed(2)}</div> ${item.obs ? <div class="obs-text">Obs: ${item.obs}</div> : ""} </div>; }); document.getElementById("lista").innerHTML = html; document.getElementById("total").innerText = total.toFixed(2); } function add(nome, preco) { let obs = document.getElementById("obsInput").value; pedido.push({nome, preco, obs}); total += preco; document.getElementById("obsInput").value = ""; render(); } function remover(i) { total -= pedido[i].preco; pedido.splice(i, 1); render(); } function pagarCartao() { if(total <= 0) return alert("Carrinho vazio!"); const nome = document.getElementById('nome-cliente').value; if(!nome) return alert("Por favor, digite seu nome."); // O número do pedido vai para a descrição window.location.href = mp-point://pay?amount=${total.toFixed(2)}&description=Pedido-${numeroPedido}&editable_amount=false; } async function gerarPix() { if(total <= 0) return alert("Carrinho vazio!"); const nomeCli = document.getElementById('nome-cliente').value; if(!nomeCli) return alert("Por favor, digite seu nome."); document.getElementById('modal').style.display = 'flex'; document.getElementById('qr').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif"; const idempotencyKey = Math.random().toString(36).substring(2, 15); try { const response = await fetch("https://api.mercadopago.com/v1/payments", { method: "POST", headers: { "Authorization": "Bearer APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276", "Content-Type": "application/json", "X-Idempotency-Key": idempotencyKey }, body: JSON.stringify({ transaction_amount: parseFloat(total.toFixed(2)), description: "Pedido Totem", payment_method_id: "pix", payer: { email: "totem@email.com", first_name: nomeCli, last_name: "Cliente" } }) }); const data = await response.json(); if(data.point_of_interaction) { document.getElementById('qr').src = data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}; } else { alert("Erro ao gerar Pix."); fecharPix(); } } catch (error) { alert("Erro de rede."); fecharPix(); } } function fecharPix() { document.getElementById('modal').style.display = 'none'; } function confirmarPagamentoPix() { const nomeCli = document.getElementById("nome-cliente").value || "Cliente"; // 1. SALVA NO BANCO LOCAL let pedidosNoBanco = JSON.parse(localStorage.getItem("pedidos") || "[]"); pedidosNoBanco.push({ numero: numeroPedido, nome: nomeCli, itens: [...pedido], total: total, status: "preparando", hora: new Date().toLocaleTimeString() }); localStorage.setItem("pedidos", JSON.stringify(pedidosNoBanco)); // 2. DISPARA IMPRESSÃO (Função otimizada para não travar) imprimir(); // 3. LIMPA TUDO E ATUALIZA TELA alert("Pedido #" + numeroPedido + " enviado para a cozinha!"); fecharPix(); // Reset de variáveis total = 0; pedido = []; numeroPedido = proximoNumero(); // Reset de campos document.getElementById("nome-cliente").value = ""; document.getElementById("obsInput").value = ""; render(); } function imprimir() { const nomeCli = document.getElementById("nome-cliente").value || "Cliente"; const numPedido = localStorage.getItem("proximoNumero") || "01"; // Conteúdo formatado para bobina térmica const conteudo = <html> <head> <style> @page { margin: 0; } body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; margin: 0; } .center { text-align: center; } .bold { font-weight: bold; } hr { border: 0; border-top: 1px dashed #000; } </style> </head> <body> <div class="center bold" style="font-size: 18px;">MYDI DELIVERY</div> <div class="center bold" style="font-size: 22px;">PEDIDO #${numPedido.padStart(2, '0')}</div> <hr> <div><b>CLIENTE:</b> ${nomeCli.toUpperCase()}</div> <div><b>HORA:</b> ${new Date().toLocaleTimeString()}</div> <hr> ${pedido.map(i => <div>1x ${i.nome} - R$ ${i.preco.toFixed(2)}</div>).join('')} <hr> <div class="center bold" style="font-size: 18px;">TOTAL: R$ ${total.toFixed(2)}</div> <br><center>Obrigado!</center><br> </body> </html> ; const win = window.open('', '', 'width=300,height=600'); win.document.write(conteudo); win.document.close(); // Aguarda carregar e dispara a janela de impressão do sistema setTimeout(() => { win.print(); win.close(); }, 500); } </script> </body> </html>
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Totem Autoatendimento PRO</title>
+    <style>
+         :root {
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --primary: #ef4444;
+            --green: #10b981;
+            --text: #0f172a;
+            --border: #e2e8f0;
+            --gold: #c5a059;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            display: flex;
+            height: 100vh;
+            color: var(--text);
+        }
+        
+        .header {
+            position: fixed;
+            width: 60%;
+            padding: 18px;
+            background: white;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+        
+        .menu {
+            width: 60%;
+            margin-top: 70px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        .item {
+            background: var(--card);
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: .25s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .item:hover {
+            transform: translateY(-6px);
+        }
+        
+        .item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        .item-info {
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-info span {
+            color: #000;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .carrinho {
+            width: 40%;
+            background: white;
+            padding: 25px;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .lista {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .item-carrinho {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #edf2f7;
+        }
+        
+        .top-item {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+        
+        .obs-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .remove {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .input {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+            width: 100%;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+        
+        .cartao {
+            background: #009ee3;
+            color: white;
+        }
+        
+        .pix {
+            background: var(--green);
+            color: white;
+        }
+        
+        #modal {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            width: 350px;
+        }
+        
+        #qr {
+            width: 250px;
+            height: 250px;
+            margin: 15px 0;
+            border: 1px solid #eee;
+        }
+        
+        .status {
+            color: #009ee3;
+            font-weight: bold;
+            animation: pisca 1.5s infinite;
+        }
+        
+        @keyframes pisca {
+            50% {
+                opacity: 0.3;
+            }
+        }
+        
+        @media print {
+            body * {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="modal">
+        <div class="box">
+            <h3 style="margin:0">Escaneie para Pagar</h3> <img id="qr" src="" alt="QR Code Pix">
+            <p class="status">Aguardando confirmação do banco...</p> <button class="btn pix" onclick="confirmarPagamentoPix()">JÁ PAGUEI (CONFIRMAR)</button> <button onclick="fecharPix()" style="margin-top:15px; background:none; border:none; text-decoration:underline; cursor:pointer; color:gray">Cancelar</button>            </div>
+    </div>
+    <div class="header">AUTO ATENDIMENTO MYDI</div>
+    <div class="menu">
+        <div class="item" onclick="add('X-Burguer', 20.00)"> <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
+            <div class="item-info">X-Burguer <span>R$ 20</span></div>
+        </div>
+        <div class="item" onclick="add('X-Bacon', 25.00)"> <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400">
+            <div class="item-info">X-Bacon <span>R$ 25</span></div>
+        </div>
+        <div class="item" onclick="add('X-Salada', 22.00)"> <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400">
+            <div class="item-info">X-Salada <span>R$ 22</span></div>
+        </div>
+        <div class="item" onclick="add('X-Tudo', 30.00)"> <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400">
+            <div class="item-info">X-Tudo <span>R$ 30</span></div>
+        </div>
+    </div>
+    <div class="carrinho">
+        <h2 style="margin-top:0">Meu Pedido</h2> <input id="nome-cliente" class="input" placeholder="Digite seu nome"> <input id="obsInput" class="input" placeholder="Observação (ex: sem cebola)">
+        <div id="lista" class="lista"></div>
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+        <h2 style="margin:0">Total: R$ <span id="total">0.00</span></h2> <button class="btn cartao" onclick="pagarCartao()">Pagar com Cartão</button> <button class="btn pix" onclick="gerarPix()">Pagar com Pix</button> </div>
+    <script>
+        let total = 0;
+        let pedido = [];
+
+        function proximoNumero() {
+            let ultimo = parseInt(localStorage.getItem("ultimoNumero") || "0");
+            let novo = ultimo + 1;
+            localStorage.setItem("ultimoNumero", novo);
+            return novo;
+        }
+        let numeroPedido = proximoNumero();
+
+        function render() {
+            let html = "";
+            pedido.forEach((item, index) => {
+                    html += < div class = "item-carrinho" > < div class = "top-item" > < span > $ {
+                        item.nome
+                    } < /span> <button class="remove" onclick="remover(${index})">&times;</button > < /div> <div style="color:var(--green)">R$ ${item.preco.toFixed(2)}</div > $ {
+                        item.obs ? < div class = "obs-text" > Obs : $ {
+                            item.obs
+                        } < /div> : ""} </div > ;
+                    }); document.getElementById("lista").innerHTML = html; document.getElementById("total").innerText = total.toFixed(2);
+            }
+
+            function add(nome, preco) {
+                let obs = document.getElementById("obsInput").value;
+                pedido.push({
+                    nome,
+                    preco,
+                    obs
+                });
+                total += preco;
+                document.getElementById("obsInput").value = "";
+                render();
+            }
+
+            function remover(i) {
+                total -= pedido[i].preco;
+                pedido.splice(i, 1);
+                render();
+            }
+
+            function pagarCartao() {
+                if (total <= 0) return alert("Carrinho vazio!");
+                const nome = document.getElementById('nome-cliente').value;
+                if (!nome) return alert("Por favor, digite seu nome."); // O número do pedido vai para a descrição window.location.href = mp-point://pay?amount=${total.toFixed(2)}&description=Pedido-${numeroPedido}&editable_amount=false; } async function gerarPix() { if(total <= 0) return alert("Carrinho vazio!"); const nomeCli = document.getElementById('nome-cliente').value; if(!nomeCli) return alert("Por favor, digite seu nome."); document.getElementById('modal').style.display = 'flex'; document.getElementById('qr').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif"; const idempotencyKey = Math.random().toString(36).substring(2, 15); try { const response = await fetch("https://api.mercadopago.com/v1/payments", { method: "POST", headers: { "Authorization": "Bearer APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276", "Content-Type": "application/json", "X-Idempotency-Key": idempotencyKey }, body: JSON.stringify({ transaction_amount: parseFloat(total.toFixed(2)), description: "Pedido Totem", payment_method_id: "pix", payer: { email: "totem@email.com", first_name: nomeCli, last_name: "Cliente" } }) }); const data = await response.json(); if(data.point_of_interaction) { document.getElementById('qr').src = data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}; } else { alert("Erro ao gerar Pix."); fecharPix(); } } catch (error) { alert("Erro de rede."); fecharPix(); } } function fecharPix() { document.getElementById('modal').style.display = 'none'; } function confirmarPagamentoPix() { const nomeCli = document.getElementById("nome-cliente").value || "Cliente"; // 1. SALVA NO BANCO LOCAL let pedidosNoBanco = JSON.parse(localStorage.getItem("pedidos") || "[]"); pedidosNoBanco.push({ numero: numeroPedido, nome: nomeCli, itens: [...pedido], total: total, status: "preparando", hora: new Date().toLocaleTimeString() }); localStorage.setItem("pedidos", JSON.stringify(pedidosNoBanco)); // 2. DISPARA IMPRESSÃO (Função otimizada para não travar) imprimir(); // 3. LIMPA TUDO E ATUALIZA TELA alert("Pedido #" + numeroPedido + " enviado para a cozinha!"); fecharPix(); // Reset de variáveis total = 0; pedido = []; numeroPedido = proximoNumero(); // Reset de campos document.getElementById("nome-cliente").value = ""; document.getElementById("obsInput").value = ""; render(); } function imprimir() { const nomeCli = document.getElementById("nome-cliente").value || "Cliente"; const numPedido = localStorage.getItem("proximoNumero") || "01"; // Conteúdo formatado para bobina térmica const conteudo = <html> <head> <style> @page { margin: 0; } body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; margin: 0; } .center { text-align: center; } .bold { font-weight: bold; } hr { border: 0; border-top: 1px dashed #000; } </style> </head> <body> <div class="center bold" style="font-size: 18px;">MYDI DELIVERY</div> <div class="center bold" style="font-size: 22px;">PEDIDO #${numPedido.padStart(2, '0')}</div> <hr> <div><b>CLIENTE:</b> ${nomeCli.toUpperCase()}</div> <div><b>HORA:</b> ${new Date().toLocaleTimeString()}</div> <hr> ${pedido.map(i => <div>1x ${i.nome} - R$ ${i.preco.toFixed(2)}</div>).join('')} <hr> <div class="center bold" style="font-size: 18px;">TOTAL: R$ ${total.toFixed(2)}</div> <br><center>Obrigado!</center><br> </body> </html> ; const win = window.open('', '', 'width=300,height=600'); win.document.write(conteudo); win.document.close(); // Aguarda carregar e dispara a janela de impressão do sistema setTimeout(() => { win.print(); win.close(); }, 500); }
+    </script>
+</body>
+
+</html>
