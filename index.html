@@ -123,11 +123,12 @@ function pagarCartao(){
     window.location.href = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido`;
 }
 
+// ✅ FUNÇÃO PIX CORRIGIDA
 async function gerarPix(){
 
     if(total<=0) return alert("Carrinho vazio");
 
-    const nome = document.getElementById("nome-cliente").value;
+    const nome = document.getElementById("nome").value; // ✅ CORRIGIDO
     if(!nome) return alert("Digite seu nome");
 
     document.getElementById("modal").style.display="flex";
@@ -160,6 +161,12 @@ async function gerarPix(){
     }
 }
 
+// ✅ FUNÇÃO VOLTOU
+function fecharPix(){
+    document.getElementById("modal").style.display="none";
+}
+
+</script>
 </script>
 
 </body>
