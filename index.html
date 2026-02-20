@@ -127,25 +127,37 @@ async function gerarPix(){
 
     if(total<=0) return alert("Carrinho vazio");
 
+    const nome = document.getElementById("nome-cliente").value;
+    if(!nome) return alert("Digite seu nome");
+
     document.getElementById("modal").style.display="flex";
 
-    const res = await fetch("http://localhost:3000/criar-pix",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            total,
-            pedido,
-            nome: document.getElementById("nome").value
-        })
-    });
+    try {
 
-    const data = await res.json();
+        const res = await fetch("https://touch-pedidos.onrender.com/criar-pix",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+                total,
+                pedido,
+                nome
+            })
+        });
 
-    document.getElementById("qr").src = data.qr;
-}
+        const data = await res.json();
 
-function fecharPix(){
-    document.getElementById("modal").style.display="none";
+        if(data.qr){
+            document.getElementById("qr").src = data.qr;
+        } else {
+            alert("Erro ao gerar Pix");
+            fecharPix();
+        }
+
+    } catch(e){
+        console.log(e);
+        alert("Erro ao conectar com servidor");
+        fecharPix();
+    }
 }
 
 </script>
