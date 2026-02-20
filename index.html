@@ -16,32 +16,24 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { margin: 0; background: #f1f5f9; display: flex; flex-direction: row; height: 100vh; overflow: hidden; }
 
-        /* Responsividade Mobile */
         @media (max-width: 768px) {
             body { flex-direction: column; overflow-y: auto; }
             .menu-container { width: 100% !important; height: auto !important; }
             .carrinho-container { width: 100% !important; border-left: none !important; border-top: 2px solid #e2e8f0; }
         }
 
-        /* Menu de Produtos */
         .menu-container { width: 65%; display: flex; flex-direction: column; background: white; }
         .header { padding: 20px; background: var(--dark); color: white; font-weight: 800; font-size: 1.5rem; text-align: center; }
         
         .grid-produtos { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-            gap: 15px; 
-            padding: 20px; 
-            overflow-y: auto; 
+            gap: 15px; padding: 20px; overflow-y: auto; 
         }
 
         .card-produto { 
-            background: white; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 15px; 
-            overflow: hidden; 
-            cursor: pointer; 
-            transition: 0.2s;
+            background: white; border: 1px solid #e2e8f0; border-radius: 15px; 
+            overflow: hidden; cursor: pointer; transition: 0.2s;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         .card-produto:active { transform: scale(0.95); }
@@ -50,20 +42,16 @@
         .card-nome { font-weight: bold; font-size: 1.1rem; display: block; }
         .card-preco { color: var(--success); font-weight: 800; font-size: 1.2rem; }
 
-        /* Carrinho Lateral */
         .carrinho-container { width: 35%; background: var(--light); display: flex; flex-direction: column; border-left: 2px solid #e2e8f0; padding: 20px; }
         .lista-itens { flex-grow: 1; overflow-y: auto; }
         .item-row { background: white; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #cbd5e1; }
         
-        /* Inputs e Botões */
         .input-group { margin-bottom: 15px; }
         input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; margin-top: 5px; }
         .btn { border: none; padding: 16px; border-radius: 12px; color: white; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn-cartao { background: var(--secondary); }
         .btn-pix { background: var(--success); }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* Modal Pix */
         #modal-pix { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 90%; }
         #qr-code { width: 200px; height: 200px; margin: 20px; }
@@ -83,8 +71,7 @@
 
     <div class="menu-container">
         <div class="header">MYDI DELIVERY - AUTOATENDIMENTO</div>
-        <div class="grid-produtos" id="grid-produtos">
-            </div>
+        <div class="grid-produtos" id="grid-produtos"></div>
     </div>
 
     <div class="carrinho-container">
@@ -120,7 +107,6 @@
     let carrinho = [];
     let total = 0;
 
-    // Inicia numeração em 01 se não existir
     if (!localStorage.getItem("proximoNumero")) localStorage.setItem("proximoNumero", "1");
 
     function renderProdutos() {
@@ -141,7 +127,7 @@
         const obs = document.getElementById('obs-geral').value;
         carrinho.push({ ...p, obs: obs });
         total += p.preco;
-        document.getElementById('obs-geral').value = ""; // limpa obs após add
+        document.getElementById('obs-geral').value = "";
         atualizarCarrinho();
     }
 
@@ -158,10 +144,7 @@
         } else {
             lista.innerHTML = carrinho.map((item, i) => `
                 <div class="item-row">
-                    <div>
-                        <strong>${item.nome}</strong><br>
-                        <small>${item.obs ? 'Obs: ' + item.obs : ''}</small>
-                    </div>
+                    <div><strong>${item.nome}</strong><br><small>${item.obs ? 'Obs: ' + item.obs : ''}</small></div>
                     <div style="display:flex; align-items:center; gap:10px;">
                         <span>R$ ${item.preco.toFixed(2)}</span>
                         <button onclick="removerDoCarrinho(${i})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer">X</button>
@@ -172,17 +155,26 @@
         document.getElementById('total-valor').innerText = total.toFixed(2);
     }
 
-    // INTEGRAÇÃO MERCADO PAGO POINT
+    // --- FUNÇÃO DA MAQUININHA MERCADO PAGO POINT ---
     function pagarCartao() {
         if (!validarPedido()) return;
+        
         const nPedido = localStorage.getItem("proximoNumero").padStart(2, '0');
-        // Link profundo para abrir o App Mercado Pago Point no Android
-        const url = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido-${nPedido}&editable_amount=false`;
+        const valorFormatado = total.toFixed(2);
+
+        // Este link abre o App Mercado Pago Point e já ativa a maquininha Bluetooth
+        // Nota: Funciona em aparelhos Android/iOS que tenham o App do Mercado Pago instalado.
+        const url = `mp-point://pay?amount=${valorFormatado}&description=Pedido-${nPedido}&editable_amount=false`;
+        
         window.location.href = url;
         
-        // Simulação: Como o navegador não sabe se a maquinha pagou, chamamos a finalização
-        // Em um cenário real com API, você usaria Webhooks.
-        setTimeout(() => { if(confirm("O pagamento foi aprovado na maquininha?")) finalizarPedido('CARTÃO'); }, 3000);
+        // Como o navegador "perde o contato" com o app da maquininha após abrir,
+        // usamos um pequeno delay para perguntar se deu certo ou finalizar automaticamente.
+        setTimeout(() => {
+            if(confirm("O pagamento foi aprovado na maquininha?")) {
+                finalizarPedido('CARTÃO');
+            }
+        }, 3000);
     }
 
     async function gerarPix() {
@@ -191,7 +183,6 @@
         document.getElementById('valor-pix').innerText = total.toFixed(2);
         document.getElementById('qr-code').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
 
-        // Substitua pelo seu Token Real ou mantenha para testes
         const token = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276";
         
         try {
@@ -208,51 +199,3 @@
             const data = await response.json();
             document.getElementById('qr-code').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
         } catch (e) {
-            alert("Erro ao gerar Pix. Tente novamente.");
-            fecharPix();
-        }
-    }
-
-    function finalizarPedido(metodo) {
-        const num = localStorage.getItem("proximoNumero");
-        const pedidoData = {
-            numero: num.padStart(2, '0'),
-            cliente: document.getElementById('nome-cliente').value,
-            itens: [...carrinho],
-            total: total,
-            pagamento: metodo,
-            hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        };
-
-        // Envia para a "Fila" no LocalStorage
-        let fila = JSON.parse(localStorage.getItem("fila_pedidos") || "[]");
-        fila.push(pedidoData);
-        localStorage.setItem("fila_pedidos", JSON.stringify(fila));
-
-        // Incrementa número do pedido
-        localStorage.setItem("proximoNumero", parseInt(num) + 1);
-
-        alert(`Pedido #${pedidoData.numero} enviado com sucesso!`);
-        resetTotem();
-    }
-
-    function validarPedido() {
-        if (total <= 0) { alert("Carrinho vazio!"); return false; }
-        if (!document.getElementById('nome-cliente').value) { alert("Informe seu nome!"); return false; }
-        return true;
-    }
-
-    function resetTotem() {
-        carrinho = [];
-        total = 0;
-        document.getElementById('nome-cliente').value = "";
-        atualizarCarrinho();
-        fecharPix();
-    }
-
-    function fecharPix() { document.getElementById('modal-pix').style.display = 'none'; }
-
-    renderProdutos();
-</script>
-</body>
-</html>
