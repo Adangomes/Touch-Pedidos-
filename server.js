@@ -24,10 +24,11 @@ app.post("/criar-pix", async (req, res) => {
                 transaction_amount: Number(total),
                 description: "Pedido Totem",
                 payment_method_id: "pix",
-                payer: {
-                    email: "teste@test.com",
-                    first_name: nome || "Cliente"
-                }
+                // Dentro de app.post("/criar-pix", ...
+payer: {
+    email: `cliente${Date.now()}@email.com`, // Cria um e-mail diferente a cada pedido
+    first_name: nome || "Cliente"
+}
             },
             {
                 headers: {
