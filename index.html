@@ -123,6 +123,8 @@ function pagarCartao(){
     window.location.href = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido`;
 }
 
+let pagamentoId = null;
+
 async function gerarPix(){
 
     if(total<=0) return alert("Carrinho vazio");
@@ -141,9 +143,15 @@ async function gerarPix(){
 
     const data = await res.json();
 
-    console.log(data); // 👈 ajuda a debug
+    console.log(data);
 
     document.getElementById("qr").src = data.qr;
+
+    // 🔥 SALVA ID DO PAGAMENTO
+    pagamentoId = data.pagamento_id;
+
+    // 🔁 COMEÇA A VERIFICAR
+    verificarPagamento();
 }
 
 function fecharPix(){
