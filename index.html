@@ -81,7 +81,7 @@
             <input type="text" id="obs-geral" placeholder="Alguma observação? (ex: sem cebola)">
         </div>
 
-        <div class="lista-itens" id="lista-carrinho">
+        <div id="lista-carrinho" class="lista-itens">
             <p style="text-align:center; color: #64748b;">O carrinho está vazio</p>
         </div>
 
@@ -162,19 +162,18 @@
         const nPedido = localStorage.getItem("proximoNumero").padStart(2, '0');
         const valorFormatado = total.toFixed(2);
 
-        // Este link abre o App Mercado Pago Point e já ativa a maquininha Bluetooth
-        // Nota: Funciona em aparelhos Android/iOS que tenham o App do Mercado Pago instalado.
+        // O segredo do Bluetooth:
+        // Esse link chama o App Point que já está pareado com a máquina física.
         const url = `mp-point://pay?amount=${valorFormatado}&description=Pedido-${nPedido}&editable_amount=false`;
         
         window.location.href = url;
         
-        // Como o navegador "perde o contato" com o app da maquininha após abrir,
-        // usamos um pequeno delay para perguntar se deu certo ou finalizar automaticamente.
+        // Simulação de confirmação manual após retorno do app
         setTimeout(() => {
             if(confirm("O pagamento foi aprovado na maquininha?")) {
                 finalizarPedido('CARTÃO');
             }
-        }, 3000);
+        }, 4000);
     }
 
     async function gerarPix() {
@@ -197,5 +196,53 @@
                 })
             });
             const data = await response.json();
-            document.getElementById('qr-code').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
+            if(data.point_of_interaction) {
+                document.getElementById('qr-code').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
+            }
         } catch (e) {
+            alert("Erro na rede ao gerar Pix.");
+            fecharPix();
+        }
+    }
+
+    function finalizarPedido(metodo) {
+        const num = localStorage.getItem("proximoNumero");
+        const pedidoData = {
+            numero: num.padStart(2, '0'),
+            cliente: document.getElementById('nome-cliente').value,
+            itens: [...carrinho],
+            total: total,
+            pagamento: metodo,
+            hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        let fila = JSON.parse(localStorage.getItem("fila_pedidos") || "[]");
+        fila.push(pedidoData);
+        localStorage.setItem("fila_pedidos", JSON.stringify(fila));
+
+        localStorage.setItem("proximoNumero", parseInt(num) + 1);
+
+        alert(`Pedido #${pedidoData.numero} ENVIADO COM SUCESSO!`);
+        resetTotem();
+    }
+
+    function validarPedido() {
+        if (total <= 0) { alert("Carrinho vazio!"); return false; }
+        if (!document.getElementById('nome-cliente').value) { alert("Informe seu nome!"); return false; }
+        return true;
+    }
+
+    function resetTotem() {
+        carrinho = [];
+        total = 0;
+        document.getElementById('nome-cliente').value = "";
+        atualizarCarrinho();
+        fecharPix();
+    }
+
+    function fecharPix() { document.getElementById('modal-pix').style.display = 'none'; }
+
+    renderProdutos();
+</script>
+</body>
+</html>
