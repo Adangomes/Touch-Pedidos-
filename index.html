@@ -54,7 +54,7 @@
 
         #modal-pix { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; text-align: center; max-width: 90%; }
-        #qr-code { width: 200px; height: 200px; margin: 20px; }
+        #qr-code { width: 200px; height: 200px; margin: 20px; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -62,7 +62,7 @@
     <div id="modal-pix">
         <div class="modal-box">
             <h2>Pagamento PIX</h2>
-            <img id="qr-code" src="" alt="QR">
+            <img id="qr-code" src="https://www.wp-prevencao.com.br/assets/images/loading.gif" alt="QR">
             <p>Escaneie para pagar R$ <span id="valor-pix">0.00</span></p>
             <button class="btn btn-pix" onclick="finalizarPedido('PIX')">CONFIRMAR PAGAMENTO</button>
             <button onclick="fecharPix()" style="display:block; width:100%; border:none; background:none; color:gray; margin-top:10px; cursor:pointer">Cancelar</button>
@@ -155,20 +155,12 @@
         document.getElementById('total-valor').innerText = total.toFixed(2);
     }
 
-    // --- FUNÇÃO DA MAQUININHA MERCADO PAGO POINT ---
     function pagarCartao() {
         if (!validarPedido()) return;
-        
         const nPedido = localStorage.getItem("proximoNumero").padStart(2, '0');
         const valorFormatado = total.toFixed(2);
-
-        // O segredo do Bluetooth:
-        // Esse link chama o App Point que já está pareado com a máquina física.
         const url = `mp-point://pay?amount=${valorFormatado}&description=Pedido-${nPedido}&editable_amount=false`;
-        
         window.location.href = url;
-        
-        // Simulação de confirmação manual após retorno do app
         setTimeout(() => {
             if(confirm("O pagamento foi aprovado na maquininha?")) {
                 finalizarPedido('CARTÃO');
@@ -178,29 +170,41 @@
 
     async function gerarPix() {
         if (!validarPedido()) return;
+        
+        // Abre o modal primeiro
         document.getElementById('modal-pix').style.display = 'flex';
         document.getElementById('valor-pix').innerText = total.toFixed(2);
-        document.getElementById('qr-code').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
-
+        
         const token = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276";
         
         try {
             const response = await fetch("https://api.mercadopago.com/v1/payments", {
                 method: "POST",
-                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                headers: { 
+                    "Authorization": `Bearer ${token}`, 
+                    "Content-Type": "application/json" 
+                },
                 body: JSON.stringify({
-                    transaction_amount: total,
+                    transaction_amount: parseFloat(total.toFixed(2)),
                     description: "Pedido Totem MyDi",
                     payment_method_id: "pix",
                     payer: { email: "cliente@email.com" }
                 })
             });
+            
             const data = await response.json();
-            if(data.point_of_interaction) {
-                document.getElementById('qr-code').src = `data:image/png;base64,${data.point_of_interaction.transaction_data.qr_code_base64}`;
+            
+            // Lógica direta para o QR Code
+            if (data.point_of_interaction && data.point_of_interaction.transaction_data) {
+                const qrBase64 = data.point_of_interaction.transaction_data.qr_code_base64;
+                document.getElementById('qr-code').src = `data:image/png;base64,${qrBase64}`;
+            } else {
+                throw new Error("Dados do QR Code não encontrados");
             }
+
         } catch (e) {
-            alert("Erro na rede ao gerar Pix.");
+            console.error(e);
+            alert("Erro ao gerar Pix. Verifique a conexão ou o Token.");
             fecharPix();
         }
     }
@@ -222,7 +226,7 @@
 
         localStorage.setItem("proximoNumero", parseInt(num) + 1);
 
-        alert(`Pedido #${pedidoData.numero} ENVIADO COM SUCESSO!`);
+        alert(`Pedido #${pedidoData.numero} ENVIADO!`);
         resetTotem();
     }
 
@@ -240,7 +244,10 @@
         fecharPix();
     }
 
-    function fecharPix() { document.getElementById('modal-pix').style.display = 'none'; }
+    function fecharPix() { 
+        document.getElementById('modal-pix').style.display = 'none'; 
+        document.getElementById('qr-code').src = "https://www.wp-prevencao.com.br/assets/images/loading.gif";
+    }
 
     renderProdutos();
 </script>
