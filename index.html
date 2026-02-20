@@ -157,6 +157,24 @@ async function gerarPix(){
 function fecharPix(){
     document.getElementById("modal").style.display="none";
 }
+    function verificarPagamento(){
+
+    const intervalo = setInterval(async ()=>{
+
+        if(!pagamentoId) return;
+
+        const res = await fetch(`https://touch-pedidos.onrender.com/verificar-pagamento?id=${pagamentoId}`);
+        const data = await res.json();
+
+        console.log("STATUS:", data);
+
+        if(data.status === "approved"){
+            clearInterval(intervalo);
+            finalizarPedido();
+        }
+
+    }, 3000);
+}
 
 </script>
 
