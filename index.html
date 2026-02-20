@@ -178,18 +178,22 @@ function fecharPix(){
 }
     function finalizarPedido(){
 
-    alert("✅ PAGAMENTO APROVADO!");
+    // 🔥 troca mensagem do modal (sem travar com alert)
+    document.querySelector(".status").innerText = "Pagamento aprovado!";
 
-    fecharPix();
+    // ⏳ espera um pouco pra mostrar pro cliente
+    setTimeout(()=>{
 
-    // reset
-    total = 0;
-    pedido = [];
-    document.getElementById("nome").value = "";
+        fecharPix();
 
-    render();
+        // reset
+        total = 0;
+        pedido = [];
+        document.getElementById("nome").value = "";
 
-    // 👉 aqui você pode chamar impressão depois
+        render();
+
+    }, 1500);
 }
 
 </script>
