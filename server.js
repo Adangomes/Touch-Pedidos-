@@ -7,8 +7,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 🔐 TOKEN via variável de ambiente (NUNCA deixar no código)
+// 🔐 TOKEN (depois coloca em variável de ambiente)
 const TOKEN = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276";
+
+// 🧠 "Banco" temporário (memória)
+let pagamentos = {};
 
 // ==============================
 // 🧾 CRIAR PAGAMENTO PIX
@@ -16,8 +19,7 @@ const TOKEN = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-
 app.post("/criar-pix", async (req, res) => {
     const { total, nome } = req.body;
 
-    // Log para saber que o pedido chegou no servidor
-    console.log(`Pedido recebido: R$ ${total} - Nome: ${nome}`);
+    console.log(`📦 Pedido recebido: R$ ${total} - ${nome}`);
 
     try {
         const response = await axios.post(
@@ -34,30 +36,48 @@ app.post("/criar-pix", async (req, res) => {
             {
                 headers: {
                     Authorization: `Bearer ${TOKEN}`,
-                    "X-Idempotency-Key": Date.now().toString() + Math.random().toString()
+                    "X-Idempotency-Key": Date.now().toString()
                 }
             }
         );
 
-        console.log("🔥 Resposta MP com sucesso!");
-        
-        const qr = response.data.point_of_interaction.transaction_data.qr_code_base64;
-        res.json({ qr: `data:image/png;base64,${qr}` });
+        const data = response.data;
+        const paymentId = data.id;
+
+        // salva como "não pago ainda"
+        pagamentos[paymentId] = false;
+
+        const qr = data.point_of_interaction.transaction_data.qr_code_base64;
+
+        console.log("✅ PIX gerado:", paymentId);
+
+        res.json({
+            qr: `data:image/png;base64,${qr}`,
+            id: paymentId
+        });
 
     } catch (err) {
-        // ESSA PARTE É A MAIS IMPORTANTE
-        const erroMsg = err.response?.data?.message || err.message;
-        console.error("❌ ERRO DETALHADO NO MERCADO PAGO:", JSON.stringify(err.response?.data || err.message));
-        
-        res.status(500).json({ 
-            erro: "Erro no Mercado Pago", 
-            detalhes: erroMsg 
+        console.error("❌ ERRO MP:", err.response?.data || err.message);
+
+        res.status(500).json({
+            erro: "Erro ao gerar Pix"
         });
     }
 });
 
 // ==============================
-// 🔔 WEBHOOK (CONFIRMA PAGAMENTO)
+// 🔎 VERIFICAR PAGAMENTO
+// ==============================
+app.get("/verificar-pagamento", (req, res) => {
+    const id = req.query.id;
+
+    res.json({
+        pago: pagamentos[id] || false
+    });
+});
+
+// ==============================
+// 🔔 WEBHOOK (CONFIRMAÇÃO REAL)
 // ==============================
 app.post("/webhook", async (req, res) => {
 
@@ -68,7 +88,6 @@ app.post("/webhook", async (req, res) => {
 
         if (!paymentId) return res.sendStatus(200);
 
-        // 🔎 CONSULTA PAGAMENTO REAL
         const pagamento = await axios.get(
             `https://api.mercadopago.com/v1/payments/${paymentId}`,
             {
@@ -80,38 +99,34 @@ app.post("/webhook", async (req, res) => {
 
         const status = pagamento.data.status;
 
+        console.log("📊 Status pagamento:", status);
+
         if (status === "approved") {
-            console.log("✅ PAGAMENTO APROVADO!");
+            console.log("💰 PAGAMENTO APROVADO!");
 
-            // 👉 AQUI você pode:
-            // salvar pedido
-            // imprimir
-            // enviar pra cozinha
-
-        } else {
-            console.log("⏳ Status:", status);
+            pagamentos[paymentId] = true; // 🔥 aqui muda pra pago
         }
 
         res.sendStatus(200);
 
     } catch (err) {
-        console.log("Erro webhook:", err.message);
+        console.error("❌ Erro webhook:", err.message);
         res.sendStatus(500);
     }
 });
 
 // ==============================
-// ❤️ ROTA PRA TESTE (IMPORTANTE NO RENDER)
+// ❤️ TESTE
 // ==============================
 app.get("/", (req, res) => {
-    res.send("Servidor rodando!");
+    res.send("🚀 Servidor rodando!");
 });
 
 // ==============================
-// 🚀 START SERVIDOR (CORRETO)
+// 🚀 START
 // ==============================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log("🚀 Servidor rodando na porta", PORT);
+    console.log("🔥 Server ON na porta", PORT);
 });
