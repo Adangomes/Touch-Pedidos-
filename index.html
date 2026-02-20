@@ -129,7 +129,7 @@ async function gerarPix(){
 
     document.getElementById("modal").style.display="flex";
 
-    const res = await fetch("http://localhost:3000/criar-pix",{
+    fetch("https://touch-pedidos.onrender.com/criar-pix",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
