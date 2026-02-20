@@ -176,24 +176,51 @@ function fecharPix(){
 
     }, 3000);
 }
-    function finalizarPedido(){
+    function finalizar(){
+    imprimir();
 
-    // 🔥 troca mensagem do modal (sem travar com alert)
-    document.querySelector(".status").innerText = "Pagamento aprovado!";
+    // cria mensagem temporária
+    const msg = document.createElement("div");
+    msg.innerText = "Pagamento aprovado ✔️";
+    
+    msg.style.position = "fixed";
+    msg.style.top = "50%";
+    msg.style.left = "50%";
+    msg.style.transform = "translate(-50%, -50%)";
+    msg.style.background = "#16a34a";
+    msg.style.color = "white";
+    msg.style.padding = "20px 40px";
+    msg.style.fontSize = "22px";
+    msg.style.borderRadius = "10px";
+    msg.style.boxShadow = "0 0 20px rgba(0,0,0,0.3)";
+    msg.style.zIndex = "9999";
+    msg.style.opacity = "0";
+    msg.style.transition = "opacity 0.3s ease";
 
-    // ⏳ espera um pouco pra mostrar pro cliente
-    setTimeout(()=>{
+    document.body.appendChild(msg);
 
-        fecharPix();
+    // fade in
+    setTimeout(() => {
+        msg.style.opacity = "1";
+    }, 50);
 
-        // reset
-        total = 0;
-        pedido = [];
-        document.getElementById("nome").value = "";
+    // fade out + remover
+    setTimeout(() => {
+        msg.style.opacity = "0";
+        setTimeout(() => {
+            msg.remove();
+        }, 300);
+    }, 1800); // tempo total na tela (1.8s)
 
-        render();
+    // reset sistema
+    total = 0;
+    pedido = [];
+    numero = Math.floor(Math.random()*900)+100;
 
-    }, 1500);
+    document.getElementById('nome').value = "";
+    document.getElementById('modal').style.display = 'none';
+
+    render();
 }
 
 </script>
