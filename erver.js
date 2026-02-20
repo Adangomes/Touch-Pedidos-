@@ -1,54 +1,108 @@
 const express = require("express");
 const axios = require("axios");
+const cors = require("cors");
+
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
-const TOKEN = "SEU_TOKEN_AQUI";
+// 🔐 COLOCA SEU TOKEN AQUI
+const TOKEN = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276";
 
-// CRIAR PIX
+// ==============================
+// 🧾 CRIAR PAGAMENTO PIX
+// ==============================
 app.post("/criar-pix", async (req, res) => {
-    const { total, nome, numeroPedido } = req.body;
+const { total, nome, pedido } = req.body;
 
-    try {
-        const pagamento = await axios.post(
-            "https://api.mercadopago.com/v1/payments",
-            {
-                transaction_amount: total,
-                description: `Pedido ${numeroPedido}`,
-                payment_method_id: "pix",
-                payer: {
-                    email: "totem@email.com",
-                    first_name: nome
-                }
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${TOKEN}`
-                }
+```
+try {
+    const response = await axios.post(
+        "https://api.mercadopago.com/v1/payments",
+        {
+            transaction_amount: Number(total),
+            description: "Pedido Totem",
+            payment_method_id: "pix",
+            payer: {
+                email: "totem@email.com",
+                first_name: nome || "Cliente"
             }
-        );
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${TOKEN}`
+            }
+        }
+    );
 
-        const qr = pagamento.data.point_of_interaction.transaction_data.qr_code_base64;
+    const data = response.data;
 
-        res.json({
-            qr: `data:image/png;base64,${qr}`
-        });
+    const qr = data.point_of_interaction.transaction_data.qr_code_base64;
 
-    } catch (err) {
-        res.status(500).json({ erro: "Erro ao gerar pix" });
-    }
+    res.json({
+        qr: `data:image/png;base64,${qr}`,
+        pagamento_id: data.id
+    });
+
+} catch (err) {
+    console.log(err.response?.data || err.message);
+    res.status(500).json({ erro: "Erro ao gerar Pix" });
+}
+```
+
 });
 
-// WEBHOOK (CONFIRMA PAGAMENTO)
-app.post("/webhook", (req, res) => {
-    console.log("Pagamento aprovado:", req.body);
+// ==============================
+// 🔔 WEBHOOK (CONFIRMA PAGAMENTO)
+// ==============================
+app.post("/webhook", async (req, res) => {
 
-    // AQUI você:
-    // salvar pedido
-    // mandar imprimir
+```
+console.log("🔔 Webhook recebido:", req.body);
+
+try {
+    const paymentId = req.body?.data?.id;
+
+    if (!paymentId) return res.sendStatus(200);
+
+    // 🔎 CONSULTA PAGAMENTO REAL
+    const pagamento = await axios.get(
+        `https://api.mercadopago.com/v1/payments/${paymentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${TOKEN}`
+            }
+        }
+    );
+
+    const status = pagamento.data.status;
+
+    if (status === "approved") {
+        console.log("✅ PAGAMENTO APROVADO!");
+
+        // 👉 AQUI você vai fazer:
+        // salvar pedido
+        // imprimir
+        // enviar pra cozinha
+
+    } else {
+        console.log("⏳ Status:", status);
+    }
 
     res.sendStatus(200);
+
+} catch (err) {
+    console.log("Erro webhook:", err.message);
+    res.sendStatus(500);
+}
+```
+
 });
 
-app.listen(3000, () => console.log("Servidor rodando"));
+// ==============================
+// 🚀 START SERVIDOR
+// ==============================
+app.listen(3000, () => {
+console.log("🚀 Servidor rodando em http://localhost:3000");
+});
