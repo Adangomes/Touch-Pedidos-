@@ -148,7 +148,7 @@ async function gerarPix(){
     document.getElementById("qr").src = data.qr;
 
     // 🔥 SALVA ID DO PAGAMENTO
-    pagamentoId = data.pagamento_id;
+    pagamentoId = data.id;
 
     // 🔁 COMEÇA A VERIFICAR
     verificarPagamento();
@@ -168,7 +168,7 @@ function fecharPix(){
 
         console.log("STATUS:", data);
 
-        if(data.status === "approved"){
+        if(data.pago === true){
             clearInterval(intervalo);
             finalizarPedido();
         }
