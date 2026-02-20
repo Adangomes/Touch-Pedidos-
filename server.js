@@ -16,50 +16,42 @@ const TOKEN = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-
 app.post("/criar-pix", async (req, res) => {
     const { total, nome } = req.body;
 
-    try {
+    // Log para saber que o pedido chegou no servidor
+    console.log(`Pedido recebido: R$ ${total} - Nome: ${nome}`);
 
+    try {
         const response = await axios.post(
             "https://api.mercadopago.com/v1/payments",
             {
                 transaction_amount: Number(total),
                 description: "Pedido Totem",
                 payment_method_id: "pix",
-                // Dentro de app.post("/criar-pix", ...
-payer: {
-    email: `cliente${Date.now()}@email.com`, // Cria um e-mail diferente a cada pedido
-    first_name: nome || "Cliente"
-}
+                payer: {
+                    email: `totem_${Math.floor(Math.random() * 999999)}@gmail.com`,
+                    first_name: nome || "Cliente"
+                }
             },
             {
                 headers: {
                     Authorization: `Bearer ${TOKEN}`,
-                    "X-Idempotency-Key": Date.now().toString()
+                    "X-Idempotency-Key": Date.now().toString() + Math.random().toString()
                 }
             }
         );
 
-        const data = response.data;
-
-        console.log("🔥 MP OK:", data.id);
-
-        if (!data.point_of_interaction) {
-            return res.status(500).json({ erro: "Sem QR" });
-        }
-
-        const qr = data.point_of_interaction.transaction_data.qr_code_base64;
-
-        if (!qr) {
-            return res.status(500).json({ erro: "QR vazio" });
-        }
-
-        res.json({
-            qr: `data:image/png;base64,${qr}`
-        });
+        console.log("🔥 Resposta MP com sucesso!");
+        
+        const qr = response.data.point_of_interaction.transaction_data.qr_code_base64;
+        res.json({ qr: `data:image/png;base64,${qr}` });
 
     } catch (err) {
-        console.log("❌ ERRO MP:", err.response?.data || err.message);
-        res.status(500).json({
-            erro: err.response?.data || "Erro geral"
+        // ESSA PARTE É A MAIS IMPORTANTE
+        const erroMsg = err.response?.data?.message || err.message;
+        console.error("❌ ERRO DETALHADO NO MERCADO PAGO:", JSON.stringify(err.response?.data || err.message));
+        
+        res.status(500).json({ 
+            erro: "Erro no Mercado Pago", 
+            detalhes: erroMsg 
         });
     }
 });
