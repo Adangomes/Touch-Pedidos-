@@ -7,10 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 🔐 TOKEN (depois coloca em variável de ambiente)
+// 🔐 TOKEN (DEPOIS COLOCA EM VARIÁVEL DE AMBIENTE)
 const TOKEN = "APP_USR-1998879028639759-021913-02c51f11e5b00f26dc6a0577a867ef53-273401276";
 
-// 🧠 "Banco" temporário (memória)
+// 🧠 "Banco" em memória
 let pagamentos = {};
 
 // ==============================
@@ -44,7 +44,7 @@ app.post("/criar-pix", async (req, res) => {
         const data = response.data;
         const paymentId = data.id;
 
-        // salva como "não pago ainda"
+        // salva como NÃO pago
         pagamentos[paymentId] = false;
 
         const qr = data.point_of_interaction.transaction_data.qr_code_base64;
@@ -66,7 +66,7 @@ app.post("/criar-pix", async (req, res) => {
 });
 
 // ==============================
-// 🔎 VERIFICAR PAGAMENTO
+// 🔎 VERIFICAR PAGAMENTO (RÁPIDO)
 // ==============================
 app.get("/verificar-pagamento", (req, res) => {
     const id = req.query.id;
@@ -104,7 +104,7 @@ app.post("/webhook", async (req, res) => {
         if (status === "approved") {
             console.log("💰 PAGAMENTO APROVADO!");
 
-            pagamentos[paymentId] = true; // 🔥 aqui muda pra pago
+            pagamentos[paymentId] = true;
         }
 
         res.sendStatus(200);
