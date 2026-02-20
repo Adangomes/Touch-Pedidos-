@@ -24,7 +24,7 @@ app.post("/criar-pix", async (req, res) => {
                 description: "Pedido Totem",
                 payment_method_id: "pix",
                 payer: {
-                    email: "totem@email.com",
+                    email: "teste@test.com",
                     first_name: nome || "Cliente"
                 }
             },
@@ -37,7 +37,18 @@ app.post("/criar-pix", async (req, res) => {
 
         const data = response.data;
 
+        console.log("🔥 RESPOSTA MP:", data); // 👈 IMPORTANTE
+
+        // ✅ VALIDAÇÃO SEGURA
+        if (!data.point_of_interaction) {
+            return res.status(500).json({ erro: "Sem dados de QR" });
+        }
+
         const qr = data.point_of_interaction.transaction_data.qr_code_base64;
+
+        if (!qr) {
+            return res.status(500).json({ erro: "QR não gerado" });
+        }
 
         res.json({
             qr: `data:image/png;base64,${qr}`,
@@ -45,7 +56,7 @@ app.post("/criar-pix", async (req, res) => {
         });
 
     } catch (err) {
-        console.log(err.response?.data || err.message);
+        console.log("❌ ERRO MP:", err.response?.data || err.message);
         res.status(500).json({ erro: "Erro ao gerar Pix" });
     }
 });
