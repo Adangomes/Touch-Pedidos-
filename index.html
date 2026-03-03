@@ -30,7 +30,7 @@ body {
     position: fixed;
     width: 60%;
     padding: 20px;
-    background: rgba(2,6,23,0.9);
+    background: rgba(2,6,23,0.95);
     backdrop-filter: blur(10px);
     font-size: 24px;
     font-weight: bold;
@@ -38,35 +38,49 @@ body {
     z-index: 10;
 }
 
-/* CATEGORIAS */
+/* ============================= */
+/* 🔥 CATEGORIAS TOUCH TOP */
+/* ============================= */
 .categorias {
     position: fixed;
     top: 70px;
     width: 60%;
     display: flex;
-    gap: 10px;
-    padding: 10px 20px;
+    gap: 15px;
+    padding: 15px 20px;
+    overflow-x: auto;
     background: #020617;
     z-index: 9;
 }
 
 .cat {
-    padding: 10px 20px;
-    border-radius: 10px;
+    min-width: 160px;
+    padding: 20px;
+    border-radius: 16px;
     background: #0f172a;
     cursor: pointer;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+    transition: .2s;
+    user-select: none;
+}
+
+.cat:active {
+    transform: scale(0.95);
 }
 
 .cat.active {
-    background: #22c55e;
+    background: var(--green);
     color: black;
+    border: none;
 }
 
 /* MENU */
 .menu {
     width: 60%;
-    margin-top: 130px;
+    margin-top: 160px;
     padding: 20px;
     display: grid;
     grid-template-columns: repeat(2,1fr);
@@ -79,10 +93,12 @@ body {
     border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
-    transition: .3s;
+    transition: .2s;
 }
 
-.item:hover { transform: scale(1.05); }
+.item:active {
+    transform: scale(0.95);
+}
 
 .item img {
     width: 100%;
@@ -96,7 +112,7 @@ body {
     justify-content: space-between;
 }
 
-.item-info span { color: #22c55e; }
+.item-info span { color: var(--green); }
 
 /* CARRINHO */
 .carrinho {
@@ -115,30 +131,32 @@ body {
 
 .item-carrinho {
     background: #0f172a;
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 10px;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 /* INPUT */
 .input {
-    padding: 12px;
-    border-radius: 10px;
+    padding: 14px;
+    border-radius: 12px;
     border: 1px solid var(--border);
     margin-bottom: 10px;
     width: 100%;
     background: #020617;
     color: white;
+    font-size: 16px;
 }
 
 /* BOTÕES */
 .btn {
-    padding: 18px;
+    padding: 20px;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
+    font-size: 18px;
 }
 
 .cartao { background: #009ee3; color: white; }
@@ -181,8 +199,8 @@ body {
 <div class="header">AUTOATENDIMENTO MYDI</div>
 
 <div class="categorias">
-    <div class="cat active" onclick="filtrar('lanches')">LANCHES</div>
-    <div class="cat" onclick="filtrar('bebidas')">BEBIDAS</div>
+    <div class="cat active" onclick="filtrar(this,'lanches')">🍔 Lanches</div>
+    <div class="cat" onclick="filtrar(this,'bebidas')">🥤 Bebidas</div>
 </div>
 
 <div class="menu" id="menu"></div>
@@ -217,7 +235,7 @@ let pedido = [];
 let total = 0;
 let pagamentoId = null;
 
-// RENDER MENU
+// MENU
 function renderMenu(cat="lanches"){
     const menu = document.getElementById("menu");
     menu.innerHTML = "";
@@ -231,10 +249,10 @@ function renderMenu(cat="lanches"){
     });
 }
 
-// FILTRO
-function filtrar(cat){
+// FILTRO TOUCH MELHORADO
+function filtrar(el,cat){
     document.querySelectorAll(".cat").forEach(c=>c.classList.remove("active"));
-    event.target.classList.add("active");
+    el.classList.add("active");
     renderMenu(cat);
 }
 
@@ -261,7 +279,6 @@ function pagarCartao(){
 }
 
 async function gerarPix(){
-
     if(total<=0) return alert("Carrinho vazio");
 
     document.getElementById("modal").style.display="flex";
@@ -295,17 +312,16 @@ function verificarPagamento(){
     },3000);
 }
 
-// FINALIZAÇÃO
+// FINALIZAR
 function finalizar(){
     alert("Pagamento aprovado!");
-
     fecharPix();
     pedido = [];
     total = 0;
     render();
 }
 
-// INICIAR
+// START
 renderMenu();
 
 </script>
