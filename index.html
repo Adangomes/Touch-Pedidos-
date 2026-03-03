@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
@@ -8,47 +7,162 @@
 
 <style>
 :root {
-    --bg: #f1f5f9;
-    --card: #ffffff;
-    --primary: #ef4444;
-    --green: #10b981;
-    --text: #0f172a;
-    --border: #e2e8f0;
+    --bg: #020617;
+    --card: #0f172a;
+    --green: #22c55e;
+    --text: #f1f5f9;
+    --border: #1f2937;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; height: 100vh; color: var(--text); }
 
-.header { position: fixed; width: 60%; padding: 18px; background: white; font-size: 22px; font-weight: bold; border-bottom: 1px solid var(--border); z-index: 10; }
-.menu { width: 60%; margin-top: 70px; padding: 20px; display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; overflow-y: auto; }
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    display: flex;
+    height: 100vh;
+    color: var(--text);
+}
 
-.item { background: var(--card); border-radius: 18px; overflow: hidden; cursor: pointer; transition: .25s; }
-.item:hover { transform: translateY(-6px); }
-.item img { width: 100%; height: 180px; object-fit: cover; }
+/* HEADER */
+.header {
+    position: fixed;
+    width: 60%;
+    padding: 20px;
+    background: rgba(2,6,23,0.8);
+    backdrop-filter: blur(10px);
+    font-size: 24px;
+    font-weight: bold;
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+}
 
-.item-info { padding: 15px; font-weight: bold; display: flex; justify-content: space-between; }
-.item-info span { font-size: 1.2rem; }
+/* MENU */
+.menu {
+    width: 60%;
+    margin-top: 80px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 20px;
+    overflow-y: auto;
+}
 
-.carrinho { width: 40%; background: white; padding: 25px; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+/* PRODUTO */
+.item {
+    background: var(--card);
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: .3s;
+}
 
-.lista { flex-grow: 1; overflow-y: auto; margin-top: 10px; }
+.item:hover {
+    transform: scale(1.05);
+}
 
-.item-carrinho { background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 10px; }
+.item img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
 
-.input { padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; width: 100%; }
+.item-info {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
 
-.btn { padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
+.item-info span {
+    color: #22c55e;
+}
 
-.cartao { background: #009ee3; color: white; }
-.pix { background: var(--green); color: white; }
+/* CARRINHO */
+.carrinho {
+    width: 40%;
+    background: #020617;
+    padding: 25px;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
 
-#modal { display: none; position: fixed; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+.lista {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+}
 
-.box { background: white; padding: 30px; border-radius: 20px; text-align: center; }
+.item-carrinho {
+    background: #0f172a;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
 
-#qr { width: 250px; height: 250px; margin: 15px 0; }
+/* INPUT */
+.input {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    width: 100%;
+    background: #020617;
+    color: white;
+}
 
-.status { color: #009ee3; font-weight: bold; }
+/* BOTÕES */
+.btn {
+    padding: 18px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.cartao {
+    background: #009ee3;
+    color: white;
+}
+
+.pix {
+    background: var(--green);
+    color: white;
+}
+
+/* MODAL */
+#modal {
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    justify-content: center;
+    align-items: center;
+}
+
+.box {
+    background: #020617;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+#qr {
+    width: 250px;
+    height: 250px;
+    margin: 15px 0;
+}
+
+.status {
+    color: #22c55e;
+    font-weight: bold;
+}
 </style>
 
 </head>
@@ -60,53 +174,50 @@ body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); di
         <h3>Escaneie para Pagar</h3>
         <img id="qr">
         <p class="status">Aguardando pagamento...</p>
-        <button onclick="fecharPix()">Cancelar</button>
+        <button class="btn" onclick="fecharPix()">Cancelar</button>
     </div>
 </div>
 
 <div class="header">AUTO ATENDIMENTO MYDI</div>
 
 <div class="menu">
-    <div class="item" onclick="add('X-Burguer',1)">
+
+    <div class="item" onclick="add('X-Burguer',10)">
         <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-        <div class="item-info">X-Burguer <span>R$1</span></div>
+        <div class="item-info">X-Burguer <span>R$10</span></div>
     </div>
 
-
-<div class="item" onclick="add('X-Bacon',25)">
-    <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400">
-    <div class="item-info">X-Bacon <span>R$25</span></div>
-</div>
-
+    <div class="item" onclick="add('X-Bacon',25)">
+        <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400">
+        <div class="item-info">X-Bacon <span>R$25</span></div>
+    </div>
 
 </div>
 
 <div class="carrinho">
     <h2>Meu Pedido</h2>
 
+    <input id="nome" class="input" placeholder="Seu nome">
+    <input id="obs" class="input" placeholder="Observação">
 
-<input id="nome" class="input" placeholder="Seu nome">
-<input id="obs" class="input" placeholder="Observação">
+    <div id="lista" class="lista"></div>
 
-<div id="lista"></div>
+    <h2>Total: R$ <span id="total">0</span></h2>
 
-<h2>Total: R$ <span id="total">0</span></h2>
-
-<button class="btn cartao" onclick="pagarCartao()">Cartão</button>
-<button class="btn pix" onclick="gerarPix()">Pix</button>
-
-
+    <button class="btn cartao" onclick="pagarCartao()">Cartão</button>
+    <button class="btn pix" onclick="gerarPix()">Pix</button>
 </div>
 
 <script>
 
 let pedido = [];
 let total = 0;
+let pagamentoId = null;
 
 function render(){
     let html="";
-    pedido.forEach((p,i)=>{
-        html += `<div>${p.nome} - R$${p.preco}</div>`;
+    pedido.forEach((p)=>{
+        html += `<div class="item-carrinho">${p.nome} - R$${p.preco}</div>`;
     });
     document.getElementById("lista").innerHTML = html;
     document.getElementById("total").innerText = total.toFixed(2);
@@ -122,8 +233,6 @@ function pagarCartao(){
     if(total<=0) return alert("Carrinho vazio");
     window.location.href = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido`;
 }
-
-let pagamentoId = null;
 
 async function gerarPix(){
 
@@ -143,21 +252,17 @@ async function gerarPix(){
 
     const data = await res.json();
 
-    console.log(data);
-
     document.getElementById("qr").src = data.qr;
-
-    // 🔥 SALVA ID DO PAGAMENTO
     pagamentoId = data.id;
 
-    // 🔁 COMEÇA A VERIFICAR
     verificarPagamento();
 }
 
 function fecharPix(){
     document.getElementById("modal").style.display="none";
 }
-   function verificarPagamento(){
+
+function verificarPagamento(){
 
     const intervalo = setInterval(async ()=>{
 
@@ -166,18 +271,15 @@ function fecharPix(){
         const res = await fetch(`https://touch-pedidos.onrender.com/verificar-pagamento?id=${pagamentoId}`);
         const data = await res.json();
 
-        console.log("STATUS:", data);
-
-        // 🔥 CORRETO
         if(data.pago){
             clearInterval(intervalo);
-            finalizarPedido();
+            finalizar();
         }
 
     }, 3000);
 }
-    function finalizar(){
-    imprimir();
+
+function finalizar(){
 
     const msg = document.createElement("div");
     msg.innerText = "Pagamento aprovado ✔️";
@@ -186,41 +288,25 @@ function fecharPix(){
     msg.style.top = "50%";
     msg.style.left = "50%";
     msg.style.transform = "translate(-50%, -50%)";
-    msg.style.background = "#16a34a";
+    msg.style.background = "#22c55e";
     msg.style.color = "white";
     msg.style.padding = "20px 40px";
     msg.style.fontSize = "22px";
     msg.style.borderRadius = "10px";
-    msg.style.boxShadow = "0 0 20px rgba(0,0,0,0.3)";
     msg.style.zIndex = "9999";
-    msg.style.opacity = "0";
-    msg.style.transition = "opacity 0.3s ease";
 
     document.body.appendChild(msg);
 
-    // fade in
     setTimeout(() => {
-        msg.style.opacity = "1";
-    }, 50);
 
-    // depois de 1.5s começa a fechar tudo
-    setTimeout(() => {
-        msg.style.opacity = "0";
-
-        // 🔥 FECHA O PIX AQUI
         fecharPix();
 
-        // reset sistema
         total = 0;
         pedido = [];
-        numero = Math.floor(Math.random()*900)+100;
-
         document.getElementById('nome').value = "";
         render();
 
-        setTimeout(() => {
-            msg.remove();
-        }, 300);
+        msg.remove();
 
     }, 1500);
 }
