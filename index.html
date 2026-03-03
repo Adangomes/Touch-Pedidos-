@@ -30,7 +30,7 @@ body {
     position: fixed;
     width: 60%;
     padding: 20px;
-    background: rgba(2,6,23,0.8);
+    background: rgba(2,6,23,0.9);
     backdrop-filter: blur(10px);
     font-size: 24px;
     font-weight: bold;
@@ -38,10 +38,35 @@ body {
     z-index: 10;
 }
 
+/* CATEGORIAS */
+.categorias {
+    position: fixed;
+    top: 70px;
+    width: 60%;
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #020617;
+    z-index: 9;
+}
+
+.cat {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: #0f172a;
+    cursor: pointer;
+    border: 1px solid var(--border);
+}
+
+.cat.active {
+    background: #22c55e;
+    color: black;
+}
+
 /* MENU */
 .menu {
     width: 60%;
-    margin-top: 80px;
+    margin-top: 130px;
     padding: 20px;
     display: grid;
     grid-template-columns: repeat(2,1fr);
@@ -49,7 +74,6 @@ body {
     overflow-y: auto;
 }
 
-/* PRODUTO */
 .item {
     background: var(--card);
     border-radius: 20px;
@@ -58,9 +82,7 @@ body {
     transition: .3s;
 }
 
-.item:hover {
-    transform: scale(1.05);
-}
+.item:hover { transform: scale(1.05); }
 
 .item img {
     width: 100%;
@@ -72,12 +94,9 @@ body {
     padding: 15px;
     display: flex;
     justify-content: space-between;
-    font-weight: 600;
 }
 
-.item-info span {
-    color: #22c55e;
-}
+.item-info span { color: #22c55e; }
 
 /* CARRINHO */
 .carrinho {
@@ -92,14 +111,13 @@ body {
 .lista {
     flex-grow: 1;
     overflow-y: auto;
-    margin-top: 10px;
 }
 
 .item-carrinho {
     background: #0f172a;
-    padding: 12px;
-    border-radius: 10px;
+    padding: 10px;
     margin-bottom: 10px;
+    border-radius: 10px;
 }
 
 /* INPUT */
@@ -121,18 +139,10 @@ body {
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
-    width: 100%;
 }
 
-.cartao {
-    background: #009ee3;
-    color: white;
-}
-
-.pix {
-    background: var(--green);
-    color: white;
-}
+.cartao { background: #009ee3; color: white; }
+.pix { background: var(--green); color: black; }
 
 /* MODAL */
 #modal {
@@ -150,52 +160,35 @@ body {
     padding: 30px;
     border-radius: 20px;
     text-align: center;
-    border: 1px solid var(--border);
 }
 
-#qr {
-    width: 250px;
-    height: 250px;
-    margin: 15px 0;
-}
+#qr { width: 250px; }
 
-.status {
-    color: #22c55e;
-    font-weight: bold;
-}
 </style>
-
 </head>
 
 <body>
 
 <div id="modal">
     <div class="box">
-        <h3>Escaneie para Pagar</h3>
+        <h3>Escaneie para pagar</h3>
         <img id="qr">
-        <p class="status">Aguardando pagamento...</p>
+        <p>Aguardando pagamento...</p>
         <button class="btn" onclick="fecharPix()">Cancelar</button>
     </div>
 </div>
 
-<div class="header">AUTO ATENDIMENTO MYDI</div>
+<div class="header">AUTOATENDIMENTO MYDI</div>
 
-<div class="menu">
-
-    <div class="item" onclick="add('X-Burguer',10)">
-        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-        <div class="item-info">X-Burguer <span>R$10</span></div>
-    </div>
-
-    <div class="item" onclick="add('X-Bacon',25)">
-        <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400">
-        <div class="item-info">X-Bacon <span>R$25</span></div>
-    </div>
-
+<div class="categorias">
+    <div class="cat active" onclick="filtrar('lanches')">🍔 Lanches</div>
+    <div class="cat" onclick="filtrar('bebidas')">🥤 Bebidas</div>
 </div>
 
+<div class="menu" id="menu"></div>
+
 <div class="carrinho">
-    <h2>Meu Pedido</h2>
+    <h2>Pedido</h2>
 
     <input id="nome" class="input" placeholder="Seu nome">
     <input id="obs" class="input" placeholder="Observação">
@@ -210,13 +203,45 @@ body {
 
 <script>
 
+// PRODUTOS
+const produtos = [
+    {nome:"X-Burguer", preco:15, cat:"lanches", img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"},
+    {nome:"X-Bacon", preco:25, cat:"lanches", img:"https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400"},
+    {nome:"X-Tudo", preco:30, cat:"lanches", img:"https://images.unsplash.com/photo-1550547660-d9450f859349?w=400"},
+    {nome:"Coca-Cola", preco:7, cat:"bebidas", img:"https://images.unsplash.com/photo-1581636625402-29b2a704ef13?w=400"},
+    {nome:"Suco", preco:6, cat:"bebidas", img:"https://images.unsplash.com/photo-1577801594038-4d45c1c3b7f2?w=400"},
+    {nome:"Água", preco:4, cat:"bebidas", img:"https://images.unsplash.com/photo-1564419320461-6870880221ad?w=400"}
+];
+
 let pedido = [];
 let total = 0;
 let pagamentoId = null;
 
+// RENDER MENU
+function renderMenu(cat="lanches"){
+    const menu = document.getElementById("menu");
+    menu.innerHTML = "";
+
+    produtos.filter(p=>p.cat===cat).forEach(p=>{
+        menu.innerHTML += `
+        <div class="item" onclick="add('${p.nome}',${p.preco})">
+            <img src="${p.img}">
+            <div class="item-info">${p.nome} <span>R$${p.preco}</span></div>
+        </div>`;
+    });
+}
+
+// FILTRO
+function filtrar(cat){
+    document.querySelectorAll(".cat").forEach(c=>c.classList.remove("active"));
+    event.target.classList.add("active");
+    renderMenu(cat);
+}
+
+// CARRINHO
 function render(){
     let html="";
-    pedido.forEach((p)=>{
+    pedido.forEach(p=>{
         html += `<div class="item-carrinho">${p.nome} - R$${p.preco}</div>`;
     });
     document.getElementById("lista").innerHTML = html;
@@ -229,9 +254,10 @@ function add(nome,preco){
     render();
 }
 
+// PAGAMENTO
 function pagarCartao(){
     if(total<=0) return alert("Carrinho vazio");
-    window.location.href = `mp-point://pay?amount=${total.toFixed(2)}&description=Pedido`;
+    window.location.href = `mp-point://pay?amount=${total.toFixed(2)}`;
 }
 
 async function gerarPix(){
@@ -243,15 +269,10 @@ async function gerarPix(){
     const res = await fetch("https://touch-pedidos.onrender.com/criar-pix",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            total,
-            pedido,
-            nome: document.getElementById("nome").value
-        })
+        body: JSON.stringify({ total, pedido })
     });
 
     const data = await res.json();
-
     document.getElementById("qr").src = data.qr;
     pagamentoId = data.id;
 
@@ -263,11 +284,7 @@ function fecharPix(){
 }
 
 function verificarPagamento(){
-
     const intervalo = setInterval(async ()=>{
-
-        if(!pagamentoId) return;
-
         const res = await fetch(`https://touch-pedidos.onrender.com/verificar-pagamento?id=${pagamentoId}`);
         const data = await res.json();
 
@@ -275,41 +292,22 @@ function verificarPagamento(){
             clearInterval(intervalo);
             finalizar();
         }
-
-    }, 3000);
+    },3000);
 }
 
+// FINALIZAÇÃO
 function finalizar(){
+    alert("Pagamento aprovado!");
 
-    const msg = document.createElement("div");
-    msg.innerText = "Pagamento aprovado ✔️";
-
-    msg.style.position = "fixed";
-    msg.style.top = "50%";
-    msg.style.left = "50%";
-    msg.style.transform = "translate(-50%, -50%)";
-    msg.style.background = "#22c55e";
-    msg.style.color = "white";
-    msg.style.padding = "20px 40px";
-    msg.style.fontSize = "22px";
-    msg.style.borderRadius = "10px";
-    msg.style.zIndex = "9999";
-
-    document.body.appendChild(msg);
-
-    setTimeout(() => {
-
-        fecharPix();
-
-        total = 0;
-        pedido = [];
-        document.getElementById('nome').value = "";
-        render();
-
-        msg.remove();
-
-    }, 1500);
+    fecharPix();
+    pedido = [];
+    total = 0;
+    render();
 }
+
+// INICIAR
+renderMenu();
+
 </script>
 
 </body>
