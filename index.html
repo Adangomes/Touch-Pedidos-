@@ -3,326 +3,173 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Totem Autoatendimento PRO</title>
+<title>Sistema de Pedidos + PIX</title>
 
 <style>
-:root {
-    --bg: #020617;
-    --card: #0f172a;
-    --green: #22c55e;
-    --text: #f1f5f9;
-    --border: #1f2937;
-}
-
-* { box-sizing: border-box; }
-
 body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: var(--bg);
-    display: flex;
-    height: 100vh;
-    color: var(--text);
-}
-
-/* HEADER */
-.header {
-    position: fixed;
-    width: 60%;
-    padding: 20px;
-    background: rgba(2,6,23,0.95);
-    backdrop-filter: blur(10px);
-    font-size: 24px;
-    font-weight: bold;
-    border-bottom: 1px solid var(--border);
-    z-index: 10;
-}
-
-/* ============================= */
-/* 🔥 CATEGORIAS TOUCH TOP */
-/* ============================= */
-.categorias {
-    position: fixed;
-    top: 70px;
-    width: 60%;
-    display: flex;
-    gap: 15px;
-    padding: 15px 20px;
-    overflow-x: auto;
-    background: #020617;
-    z-index: 9;
-}
-
-.cat {
-    min-width: 160px;
-    padding: 20px;
-    border-radius: 16px;
+    font-family: Arial;
     background: #0f172a;
-    cursor: pointer;
-    border: 2px solid var(--border);
-    font-size: 18px;
-    text-align: center;
-    font-weight: bold;
-    transition: .2s;
-    user-select: none;
+    color: #fff;
 }
 
-.cat:active {
-    transform: scale(0.95);
-}
-
-.cat.active {
-    background: var(--green);
-    color: black;
-    border: none;
-}
-
-/* MENU */
-.menu {
-    width: 60%;
-    margin-top: 160px;
+/* CONTAINER */
+.container {
+    max-width: 500px;
+    margin: auto;
     padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 20px;
-    overflow-y: auto;
 }
 
-.item {
-    background: var(--card);
-    border-radius: 20px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: .2s;
-}
-
-.item:active {
-    transform: scale(0.95);
-}
-
-.item img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.item-info {
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.item-info span { color: var(--green); }
-
-/* CARRINHO */
-.carrinho {
-    width: 40%;
-    background: #020617;
-    padding: 25px;
-    border-left: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-}
-
-.lista {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-.item-carrinho {
-    background: #0f172a;
-    padding: 12px;
-    margin-bottom: 10px;
+/* CARD */
+.card {
+    background: #1e293b;
+    padding: 20px;
     border-radius: 12px;
+    margin-bottom: 15px;
 }
 
 /* INPUT */
-.input {
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    margin-bottom: 10px;
+input, select {
     width: 100%;
-    background: #020617;
-    color: white;
-    font-size: 16px;
+    padding: 10px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: none;
 }
 
-/* BOTÕES */
-.btn {
-    padding: 20px;
+/* BOTÃO */
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
     border: none;
-    border-radius: 14px;
+    border-radius: 10px;
+    background: #22c55e;
+    color: #000;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 10px;
-    font-size: 18px;
 }
 
-.cartao { background: #009ee3; color: white; }
-.pix { background: var(--green); color: black; }
-
-/* MODAL */
-#modal {
+/* PIX BOX */
+.pix-box {
     display: none;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.9);
-    justify-content: center;
-    align-items: center;
-}
-
-.box {
-    background: #020617;
-    padding: 30px;
-    border-radius: 20px;
     text-align: center;
 }
 
-#qr { width: 250px; }
-
+.qr {
+    width: 200px;
+    height: 200px;
+    background: #fff;
+    margin: 10px auto;
+}
 </style>
 </head>
 
 <body>
 
-<div id="modal">
-    <div class="box">
-        <h3>Escaneie para pagar</h3>
-        <img id="qr">
-        <p>Aguardando pagamento...</p>
-        <button class="btn" onclick="fecharPix()">Cancelar</button>
+<div class="container">
+
+    <h2>🛒 Fazer Pedido</h2>
+
+    <div class="card">
+        <label>Nome</label>
+        <input type="text" id="nome">
+
+        <label>Pedido</label>
+        <input type="text" id="pedido">
+
+        <label>Valor (R$)</label>
+        <input type="number" id="valor">
+
+        <label>Forma de pagamento</label>
+        <select id="pagamento">
+            <option value="pix">PIX</option>
+            <option value="dinheiro">Dinheiro</option>
+        </select>
+
+        <button onclick="confirmarPedido()">Confirmar Pedido</button>
     </div>
-</div>
 
-<div class="header">AUTOATENDIMENTO MYDI</div>
+    <div class="card pix-box" id="pixBox">
+        <h3>💰 Pagamento via PIX</h3>
 
-<div class="categorias">
-    <div class="cat active" onclick="filtrar(this,'lanches')">LANCHES</div>
-    <div class="cat" onclick="filtrar(this,'bebidas')">BEBIDAS</div>
-</div>
+        <div class="qr" id="qrcode"></div>
 
-<div class="menu" id="menu"></div>
+        <p id="codigoPix"></p>
 
-<div class="carrinho">
-    <h2>Pedido</h2>
+        <button onclick="copiarPix()">Copiar Código PIX</button>
+        <button onclick="enviarCozinha()">Já paguei</button>
+    </div>
 
-    <input id="nome" class="input" placeholder="Seu nome">
-    <input id="obs" class="input" placeholder="Observação">
-
-    <div id="lista" class="lista"></div>
-
-    <h2>Total: R$ <span id="total">0</span></h2>
-
-    <button class="btn cartao" onclick="pagarCartao()">Cartão</button>
-    <button class="btn pix" onclick="gerarPix()">Pix</button>
 </div>
 
 <script>
 
-// PRODUTOS
-const produtos = [
-    {nome:"X-Burguer", preco:15, cat:"lanches", img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"},
-    {nome:"X-Bacon", preco:25, cat:"lanches", img:"https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400"},
-    {nome:"X-Tudo", preco:30, cat:"lanches", img:"https://images.unsplash.com/photo-1550547660-d9450f859349?w=400"},
-    {nome:"Coca-Cola", preco:7, cat:"bebidas", img:"https://images.unsplash.com/photo-1581636625402-29b2a704ef13?w=400"},
-    {nome:"Suco", preco:6, cat:"bebidas", img:"https://images.unsplash.com/photo-1577801594038-4d45c1c3b7f2?w=400"},
-    {nome:"Água", preco:4, cat:"bebidas", img:"https://images.unsplash.com/photo-1564419320461-6870880221ad?w=400"}
-];
+// 🔹 CONFIG PIX (ALTERA AQUI)
+const chavePix = "47999999999"; // sua chave real
+const nomeRecebedor = "Seu Nome";
+const cidade = "Jaraguá do Sul";
 
-let pedido = [];
-let total = 0;
-let pagamentoId = null;
-
-// MENU
-function renderMenu(cat="lanches"){
-    const menu = document.getElementById("menu");
-    menu.innerHTML = "";
-
-    produtos.filter(p=>p.cat===cat).forEach(p=>{
-        menu.innerHTML += `
-        <div class="item" onclick="add('${p.nome}',${p.preco})">
-            <img src="${p.img}">
-            <div class="item-info">${p.nome} <span>R$${p.preco}</span></div>
-        </div>`;
-    });
+// 🔹 GERAR PIX (código simplificado)
+function gerarPix(valor) {
+    return `PIX|${chavePix}|${valor}|${nomeRecebedor}|${cidade}`;
 }
 
-// FILTRO TOUCH MELHORADO
-function filtrar(el,cat){
-    document.querySelectorAll(".cat").forEach(c=>c.classList.remove("active"));
-    el.classList.add("active");
-    renderMenu(cat);
+// 🔹 CONFIRMAR PEDIDO
+function confirmarPedido() {
+    let nome = document.getElementById("nome").value;
+    let pedido = document.getElementById("pedido").value;
+    let valor = document.getElementById("valor").value;
+    let pagamento = document.getElementById("pagamento").value;
+
+    if(!nome || !pedido || !valor){
+        alert("Preencha tudo!");
+        return;
+    }
+
+    window.dadosPedido = { nome, pedido, valor };
+
+    if(pagamento === "pix") {
+
+        let codigo = gerarPix(valor);
+
+        document.getElementById("pixBox").style.display = "block";
+        document.getElementById("codigoPix").innerText = codigo;
+
+        // QR CODE
+        document.getElementById("qrcode").innerHTML =
+            `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${codigo}">`;
+
+    } else {
+        enviarWhatsApp(nome, pedido, valor);
+    }
 }
 
-// CARRINHO
-function render(){
-    let html="";
-    pedido.forEach(p=>{
-        html += `<div class="item-carrinho">${p.nome} - R$${p.preco}</div>`;
-    });
-    document.getElementById("lista").innerHTML = html;
-    document.getElementById("total").innerText = total.toFixed(2);
+// 🔹 COPIAR PIX
+function copiarPix() {
+    let codigo = document.getElementById("codigoPix").innerText;
+    navigator.clipboard.writeText(codigo);
+    alert("PIX copiado!");
 }
 
-function add(nome,preco){
-    pedido.push({nome,preco});
-    total += preco;
-    render();
+// 🔹 ENVIAR PARA COZINHA (WHATSAPP)
+function enviarCozinha() {
+    let p = window.dadosPedido;
+    enviarWhatsApp(p.nome, p.pedido, p.valor);
 }
 
-// PAGAMENTO
-function pagarCartao(){
-    if(total<=0) return alert("Carrinho vazio");
-    window.location.href = `mp-point://pay?amount=${total.toFixed(2)}`;
+// 🔹 WHATSAPP AUTOMÁTICO
+function enviarWhatsApp(nome, pedido, valor) {
+
+    let numero = "5547999999999"; // seu número
+
+    let msg = `NOVO PEDIDO%0A
+Nome: ${nome}%0A
+Pedido: ${pedido}%0A
+Valor: R$ ${valor}`;
+
+    window.open(`https://wa.me/${numero}?text=${msg}`, "_blank");
 }
-
-async function gerarPix(){
-    if(total<=0) return alert("Carrinho vazio");
-
-    document.getElementById("modal").style.display="flex";
-
-    const res = await fetch("https://touch-pedidos.onrender.com/criar-pix",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ total, pedido })
-    });
-
-    const data = await res.json();
-    document.getElementById("qr").src = data.qr;
-    pagamentoId = data.id;
-
-    verificarPagamento();
-}
-
-function fecharPix(){
-    document.getElementById("modal").style.display="none";
-}
-
-function verificarPagamento(){
-    const intervalo = setInterval(async ()=>{
-        const res = await fetch(`https://touch-pedidos.onrender.com/verificar-pagamento?id=${pagamentoId}`);
-        const data = await res.json();
-
-        if(data.pago){
-            clearInterval(intervalo);
-            finalizar();
-        }
-    },3000);
-}
-
-// FINALIZAR
-function finalizar(){
-    alert("Pagamento aprovado!");
-    fecharPix();
-    pedido = [];
-    total = 0;
-    render();
-}
-
-// START
-renderMenu();
 
 </script>
 
