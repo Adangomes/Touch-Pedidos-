@@ -2,174 +2,171 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<title>Sistema Balcão + Cozinha</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Pedidos + PIX</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: #0f172a;
-    color: #fff;
-}
+body { margin:0; font-family: Arial; background:#0f172a; color:white; }
 
-/* CONTAINER */
-.container {
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
-}
+/* TELAS */
+.tela { display:none; padding:10px; }
+.ativa { display:block; }
 
-/* CARD */
-.card {
-    background: #1e293b;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-}
-
-/* INPUT */
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    border-radius: 8px;
-    border: none;
-}
-
-/* BOTÃO */
+/* BOTÕES */
 button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 10px;
-    background: #22c55e;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
+    width:100%;
+    padding:15px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#22c55e;
+    font-size:18px;
 }
 
-/* PIX BOX */
-.pix-box {
-    display: none;
-    text-align: center;
+/* PRODUTOS */
+.produtos {
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
 }
 
-.qr {
-    width: 200px;
-    height: 200px;
-    background: #fff;
-    margin: 10px auto;
+.produto {
+    background:#1e293b;
+    padding:25px;
+    border-radius:12px;
+    text-align:center;
+    font-size:18px;
 }
+
+/* PEDIDOS COZINHA */
+.pedido {
+    background:#1e293b;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
+}
+
+.pronto { background:#16a34a; }
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="container">
+<!-- MENU -->
+<div style="display:flex;">
+    <button onclick="trocar('balcao')">Balcão</button>
+    <button onclick="trocar('cozinha')">Cozinha</button>
+</div>
 
-    <h2>🛒 Fazer Pedido</h2>
+<!-- BALCÃO -->
+<div id="balcao" class="tela ativa">
 
-    <div class="card">
-        <label>Nome</label>
-        <input type="text" id="nome">
+<h2>🛒 Pedido</h2>
 
-        <label>Pedido</label>
-        <input type="text" id="pedido">
+<div class="produtos">
+    <div class="produto" onclick="add('Hamburguer',20)">🍔 20</div>
+    <div class="produto" onclick="add('Pizza',35)">🍕 35</div>
+    <div class="produto" onclick="add('Refri',8)">🥤 8</div>
+    <div class="produto" onclick="add('Batata',15)">🍟 15</div>
+</div>
 
-        <label>Valor (R$)</label>
-        <input type="number" id="valor">
+<h3 id="lista"></h3>
+<h2>Total: R$ <span id="total">0</span></h2>
 
-        <label>Forma de pagamento</label>
-        <select id="pagamento">
-            <option value="pix">PIX</option>
-            <option value="dinheiro">Dinheiro</option>
-        </select>
+<button onclick="finalizar()">Finalizar (PIX)</button>
 
-        <button onclick="confirmarPedido()">Confirmar Pedido</button>
-    </div>
+</div>
 
-    <div class="card pix-box" id="pixBox">
-        <h3>💰 Pagamento via PIX</h3>
-
-        <div class="qr" id="qrcode"></div>
-
-        <p id="codigoPix"></p>
-
-        <button onclick="copiarPix()">Copiar Código PIX</button>
-        <button onclick="enviarCozinha()">Já paguei</button>
-    </div>
-
+<!-- COZINHA -->
+<div id="cozinha" class="tela">
+<h2>👨‍🍳 Cozinha</h2>
+<div id="pedidos"></div>
 </div>
 
 <script>
 
-// 🔹 CONFIG PIX (ALTERA AQUI)
-const chavePix = "47999999999"; // sua chave real
-const nomeRecebedor = "Seu Nome";
-const cidade = "Jaraguá do Sul";
+let carrinho = [];
+let total = 0;
 
-// 🔹 GERAR PIX (código simplificado)
-function gerarPix(valor) {
-    return `PIX|${chavePix}|${valor}|${nomeRecebedor}|${cidade}`;
+// TROCAR TELA
+function trocar(t){
+    document.querySelectorAll('.tela').forEach(e=>e.classList.remove('ativa'));
+    document.getElementById(t).classList.add('ativa');
 }
 
-// 🔹 CONFIRMAR PEDIDO
-function confirmarPedido() {
-    let nome = document.getElementById("nome").value;
-    let pedido = document.getElementById("pedido").value;
-    let valor = document.getElementById("valor").value;
-    let pagamento = document.getElementById("pagamento").value;
-
-    if(!nome || !pedido || !valor){
-        alert("Preencha tudo!");
-        return;
-    }
-
-    window.dadosPedido = { nome, pedido, valor };
-
-    if(pagamento === "pix") {
-
-        let codigo = gerarPix(valor);
-
-        document.getElementById("pixBox").style.display = "block";
-        document.getElementById("codigoPix").innerText = codigo;
-
-        // QR CODE
-        document.getElementById("qrcode").innerHTML =
-            `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${codigo}">`;
-
-    } else {
-        enviarWhatsApp(nome, pedido, valor);
-    }
+// ADD PRODUTO
+function add(nome, valor){
+    carrinho.push({nome, valor});
+    total += valor;
+    atualizar();
 }
 
-// 🔹 COPIAR PIX
-function copiarPix() {
-    let codigo = document.getElementById("codigoPix").innerText;
-    navigator.clipboard.writeText(codigo);
-    alert("PIX copiado!");
+// ATUALIZA
+function atualizar(){
+    document.getElementById("lista").innerText =
+        carrinho.map(i=>i.nome).join(", ");
+
+    document.getElementById("total").innerText = total;
 }
 
-// 🔹 ENVIAR PARA COZINHA (WHATSAPP)
-function enviarCozinha() {
-    let p = window.dadosPedido;
-    enviarWhatsApp(p.nome, p.pedido, p.valor);
+// FINALIZAR
+function finalizar(){
+
+    let pedido = {
+        id: Date.now(),
+        itens: carrinho,
+        total: total,
+        status: "novo"
+    };
+
+    let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+    pedidos.push(pedido);
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+
+    alert("Pedido enviado pra cozinha!");
+
+    carrinho = [];
+    total = 0;
+    atualizar();
 }
 
-// 🔹 WHATSAPP AUTOMÁTICO
-function enviarWhatsApp(nome, pedido, valor) {
+// ATUALIZA COZINHA
+function carregarPedidos(){
 
-    let numero = "5547999999999"; // seu número
+    let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
 
-    let msg = `NOVO PEDIDO%0A
-Nome: ${nome}%0A
-Pedido: ${pedido}%0A
-Valor: R$ ${valor}`;
+    let html = "";
 
-    window.open(`https://wa.me/${numero}?text=${msg}`, "_blank");
+    pedidos.forEach(p => {
+
+        html += `
+        <div class="pedido ${p.status=='pronto'?'pronto':''}">
+            <b>#${p.id}</b><br>
+            ${p.itens.map(i=>i.nome).join(", ")}<br>
+            R$ ${p.total}
+            <button onclick="pronto(${p.id})">Marcar Pronto</button>
+        </div>
+        `;
+    });
+
+    document.getElementById("pedidos").innerHTML = html;
 }
+
+// MARCAR PRONTO
+function pronto(id){
+
+    let pedidos = JSON.parse(localStorage.getItem("pedidos") || "[]");
+
+    pedidos = pedidos.map(p=>{
+        if(p.id === id) p.status = "pronto";
+        return p;
+    });
+
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+}
+
+// AUTO UPDATE
+setInterval(carregarPedidos, 1000);
 
 </script>
 
